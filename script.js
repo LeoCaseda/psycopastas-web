@@ -1,7 +1,7 @@
 const WHATSAPP_NUMBER = "";
 const INSTAGRAM_LINK = "https://www.instagram.com/psycopastas/";
 const ADMIN_KEY = "psyco2026";
-const CATALOG_STORAGE_KEY = "psycopastas.catalog.v2";
+const CATALOG_STORAGE_KEY = "psycopastas.catalog.v3";
 const ADMIN_SESSION_KEY = "psycopastas.admin.unlocked";
 
 const DEFAULT_CATALOG = {
@@ -37,14 +37,6 @@ const DEFAULT_CATALOG = {
       tag: "Suaves",
       detail: "Suaves, caseros y livianos",
       description: "Bocados tiernos, artesanales y listos para disfrutar con manteca, crema o estofado.",
-    },
-    {
-      id: "product-lasagna",
-      type: "product",
-      name: "Lasagna familiar",
-      tag: "Horno",
-      detail: "Capas de masa, salsa y relleno",
-      description: "Una opción abundante, familiar y perfecta para servir, compartir y repetir.",
     },
     {
       id: "product-canelones",
