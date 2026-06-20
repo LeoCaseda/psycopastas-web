@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="PsycoPastas, pastas artesanales hechas con receta familiar. De mi infancia a tu plato."
+    />
+    <title>PsycoPastas | Pastas artesanales de receta familiar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-header>
+      <a class="brand" href="#inicio" aria-label="PsycoPastas">
+        <img
+          src="img/Logo.jpeg"
+          alt=""
+        />
+        <span>PsycoPastas</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Abrir menú" data-nav-toggle>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="site-nav" data-nav>
+        <a href="#productos">Productos</a>
+        <a href="#ofertas">Ofertas</a>
+        <a href="#calidad">Calidad</a>
+        <a href="#pedido">Pedido</a>
+        <button class="nav-admin" type="button" data-admin-open>Gestión</button>
+        <a href="https://www.instagram.com/psycopastas/" target="_blank" rel="noreferrer">
+          Instagram
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="inicio">
+        <div class="hero-bg" aria-hidden="true">
+          <span class="strand strand-one"></span>
+          <span class="strand strand-two"></span>
+          <span class="strand strand-three"></span>
+        </div>
+
+        <div class="hero-content">
+          <p class="eyebrow reveal">Pastas artesanales de receta familiar</p>
+          <h1 class="reveal">PsycoPastas</h1>
+          <p class="hero-copy reveal">
+            El diagnóstico es claro: necesitás pastas. Fideos, ravioles, sorrentinos y
+            especiales hechos con una receta familiar, mucho oficio y ese sabor de casa
+            que va de mi infancia a tu plato.
+          </p>
+
+          <div class="hero-actions reveal">
+            <a class="btn btn-primary" href="#productos">Ver productos</a>
+            <a class="btn btn-ghost" href="#pedido">Armar pedido</a>
+          </div>
+
+          <div class="hero-proof reveal" aria-label="Datos destacados">
+            <span>Receta familiar</span>
+            <span>Pastas artesanales</span>
+            <span>Por pedido</span>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal">
+          <div class="image-orbit" aria-hidden="true"></div>
+          <figure class="logo-medallion">
+            <img
+              src="img/Slogan.jpeg"
+              alt="Ilustracion de PsycoPastas con copa y pastas"
+            />
+          </figure>
+          <figure class="product-medallion">
+            <img
+              src="img/Presentacion.jpeg"
+              alt="Fideos caseros de PsycoPastas"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section class="intro-strip" aria-label="Especialidades">
+        <div class="strip-track">
+          <div class="strip-group">
+            <span>Fideos caseros</span>
+            <span>Ravioles</span>
+            <span>Sorrentinos</span>
+            <span>Ñoquis</span>
+            <span>Lasagna</span>
+            <span>Canelones</span>
+          </div>
+          <div class="strip-group" aria-hidden="true">
+            <span>Fideos caseros</span>
+            <span>Ravioles</span>
+            <span>Sorrentinos</span>
+            <span>Ñoquis</span>
+            <span>Lasagna</span>
+            <span>Canelones</span>
+          </div>
+          <div class="strip-group" aria-hidden="true">
+            <span>Fideos caseros</span>
+            <span>Ravioles</span>
+            <span>Sorrentinos</span>
+            <span>Ñoquis</span>
+            <span>Lasagna</span>
+            <span>Canelones</span>
+          </div>
+          <div class="strip-group" aria-hidden="true">
+            <span>Fideos caseros</span>
+            <span>Ravioles</span>
+            <span>Sorrentinos</span>
+            <span>Ñoquis</span>
+            <span>Lasagna</span>
+            <span>Canelones</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section offers-section" id="ofertas" data-offers-section>
+        <div class="section-heading reveal">
+          <p class="eyebrow">Ofertas activas</p>
+          <h2>Promos con fecha, visibles solo mientras están vigentes.</h2>
+          <p>
+            Las ofertas cargadas desde gestión aparecen acá y también pueden sumarse
+            al pedido como cualquier producto.
+          </p>
+        </div>
+
+        <div class="offer-grid" data-offers></div>
+      </section>
+
+      <section class="section menu-section" id="productos">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Menú artesanal</p>
+          <h2>Recetas familiares pensadas para compartir.</h2>
+          <p>
+            Elegí tus variedades favoritas, sumá combos y armá una consulta rápida.
+            Cada preparación conserva ese espíritu de casa: simple, abundante y con sabor propio.
+          </p>
+        </div>
+
+        <div class="menu-grid" data-products>
+          <article class="product-card reveal" data-product="Fideos caseros" data-detail="Masa al huevo, corte ancho">
+            <div class="product-top">
+              <span class="product-number">01</span>
+              <span class="product-tag">Clásico</span>
+            </div>
+            <h3>Fideos caseros</h3>
+            <p>Masa fresca, textura suave y corte generoso para salsas intensas.</p>
+            <div class="product-controls">
+              <button class="qty-btn" type="button" data-action="decrease" aria-label="Restar fideos caseros">-</button>
+              <output data-qty>0</output>
+              <button class="qty-btn" type="button" data-action="increase" aria-label="Sumar fideos caseros">+</button>
+            </div>
+          </article>
+
+          <article class="product-card reveal" data-product="Ravioles" data-detail="Rellenos de estación">
+            <div class="product-top">
+              <span class="product-number">02</span>
+              <span class="product-tag">Rellenos</span>
+            </div>
+            <h3>Ravioles</h3>
+            <p>Cuadraditos delicados con rellenos cremosos y masa fina.</p>
+            <div class="product-controls">
+              <button class="qty-btn" type="button" data-action="decrease" aria-label="Restar ravioles">-</button>
+              <output data-qty>0</output>
+              <button class="qty-btn" type="button" data-action="increase" aria-label="Sumar ravioles">+</button>
+            </div>
+          </article>
+
+          <article class="product-card reveal" data-product="Sorrentinos" data-detail="Formato grande y relleno abundante">
+            <div class="product-top">
+              <span class="product-number">03</span>
+              <span class="product-tag">Premium</span>
+            </div>
+            <h3>Sorrentinos</h3>
+            <p>Redondos, grandes y pensados para una comida protagonista.</p>
+            <div class="product-controls">
+              <button class="qty-btn" type="button" data-action="decrease" aria-label="Restar sorrentinos">-</button>
+              <output data-qty>0</output>
+              <button class="qty-btn" type="button" data-action="increase" aria-label="Sumar sorrentinos">+</button>
+            </div>
+          </article>
+
+          <article class="product-card reveal" data-product="Ñoquis de papa" data-detail="Suaves, frescos y livianos">
+            <div class="product-top">
+              <span class="product-number">04</span>
+              <span class="product-tag">Suaves</span>
+            </div>
+            <h3>Ñoquis de papa</h3>
+            <p>Bocados tiernos, caseros y listos para manteca, crema o estofado.</p>
+            <div class="product-controls">
+              <button class="qty-btn" type="button" data-action="decrease" aria-label="Restar ñoquis">-</button>
+              <output data-qty>0</output>
+              <button class="qty-btn" type="button" data-action="increase" aria-label="Sumar ñoquis">+</button>
+            </div>
+          </article>
+
+          <article class="product-card reveal" data-product="Lasagna familiar" data-detail="Capas de masa, salsa y relleno">
+            <div class="product-top">
+              <span class="product-number">05</span>
+              <span class="product-tag">Horno</span>
+            </div>
+            <h3>Lasagna familiar</h3>
+            <p>Una opción abundante para servir, compartir y repetir.</p>
+            <div class="product-controls">
+              <button class="qty-btn" type="button" data-action="decrease" aria-label="Restar lasagna">-</button>
+              <output data-qty>0</output>
+              <button class="qty-btn" type="button" data-action="increase" aria-label="Sumar lasagna">+</button>
+            </div>
+          </article>
+
+          <article class="product-card reveal" data-product="Canelones" data-detail="Rellenos, salsa y gratinado opcional">
+            <div class="product-top">
+              <span class="product-number">06</span>
+              <span class="product-tag">Casa</span>
+            </div>
+            <h3>Canelones</h3>
+            <p>Para esos almuerzos con mantel largo y ganas de algo especial.</p>
+            <div class="product-controls">
+              <button class="qty-btn" type="button" data-action="decrease" aria-label="Restar canelones">-</button>
+              <output data-qty>0</output>
+              <button class="qty-btn" type="button" data-action="increase" aria-label="Sumar canelones">+</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section quality-section" id="calidad">
+        <div class="quality-media reveal">
+          <img
+            src="img/Presentacion.jpeg"
+            alt="Fideos caseros elaborados por PsycoPastas"
+          />
+        </div>
+
+       <div class="quality-content reveal">
+          <p class="eyebrow">Hecho con calma</p>
+          <h2>No es cualquier receta: es una receta de familia.</h2>
+          <p>
+            Cada pedido nace de una forma de cocinar heredada, con preparaciones artesanales,
+            rellenos generosos y ese sabor que recuerda a la mesa de casa.
+          </p>
+
+          <div class="quality-list">
+            <div>
+              <span>01</span>
+              <strong>Receta familiar</strong>
+              <p>Una propuesta con historia, pensada para llevar un recuerdo de infancia a tu plato.</p>
+            </div>
+            <div>
+              <span>02</span>
+              <strong>Preparación artesanal</strong>
+              <p>Pastas trabajadas con paciencia, detalle y una identidad propia.</p>
+            </div>
+            <div>
+              <span>03</span>
+              <strong>Coordinación por pedido</strong>
+              <p>Cantidades, entregas y preferencias se coordinan de forma directa.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="quote-section">
+        <div class="quote-inner reveal">
+          <img
+            src="img/Logo.jpeg"
+            alt=""
+          />
+          <blockquote>
+            "De mi infancia a tu plato"
+          </blockquote>
+        </div>
+      </section>
+
+      <section class="section order-section" id="pedido">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Pedido rápido</p>
+          <h2>Armá tu consulta y enviala directo a PsycoPastas.</h2>
+          <p>
+            La web prepara un mensaje con tu selección para coordinar sabores, stock,
+            entrega y forma de pago.
+          </p>
+        </div>
+
+        <div class="order-layout">
+          <form class="order-form reveal" data-order-form>
+            <label>
+              Nombre
+              <input name="name" type="text" placeholder="Tu nombre" autocomplete="name" />
+            </label>
+            <label>
+              Zona o dirección
+              <input name="address" type="text" placeholder="Barrio, zona o retiro" autocomplete="street-address" />
+            </label>
+            <label>
+              Comentarios
+              <textarea name="notes" rows="4" placeholder="Sabores, fecha ideal o detalle del pedido"></textarea>
+            </label>
+          </form>
+
+          <aside class="order-summary reveal" aria-live="polite">
+            <div class="summary-head">
+              <span>Tu selección</span>
+              <button class="clear-btn" type="button" data-clear>Limpiar</button>
+            </div>
+            <div class="summary-items" data-summary>
+              <p class="empty-state">Todavía no agregaste productos.</p>
+            </div>
+            <a class="btn btn-primary summary-cta" data-order-link href="https://www.instagram.com/psycopastas/" target="_blank" rel="noreferrer">
+              Enviar por Instagram
+            </a>
+            <button class="btn btn-ghost summary-copy" type="button" data-copy>
+              Copiar mensaje
+            </button>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>PsycoPastas</strong>
+        <p>Pastas artesanales de receta familiar. De mi infancia a tu plato.</p>
+      </div>
+      <a href="https://www.instagram.com/psycopastas/" target="_blank" rel="noreferrer">
+        @psycopastas
+      </a>
+    </footer>
+
+    <div class="admin-panel" data-admin-panel hidden>
+      <button class="admin-backdrop" type="button" aria-label="Cerrar gestión" data-admin-close></button>
+      <section class="admin-shell" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+        <div class="admin-head">
+          <div>
+            <p class="eyebrow">Acceso privado</p>
+            <h2 id="admin-title">Gestión PsycoPastas</h2>
+          </div>
+          <button class="admin-close" type="button" aria-label="Cerrar gestión" data-admin-close>×</button>
+        </div>
+
+        <form class="admin-login" data-admin-login>
+          <label>
+            Clave de acceso
+            <input type="password" name="adminKey" autocomplete="current-password" required />
+          </label>
+          <button class="btn btn-primary" type="submit">Ingresar</button>
+        </form>
+
+        <div class="admin-workspace" data-admin-workspace hidden>
+          <div class="admin-tabs" role="tablist" aria-label="Gestión de catálogo">
+            <button class="is-active" type="button" data-admin-tab="products">Productos</button>
+            <button type="button" data-admin-tab="combos">Combos</button>
+            <button type="button" data-admin-tab="offers">Ofertas</button>
+          </div>
+
+          <div class="admin-pane is-active" data-admin-pane="products">
+            <form class="admin-form" data-product-form>
+              <label>
+                Producto
+                <input name="name" type="text" placeholder="Ej: Tallarines al huevo" required />
+              </label>
+              <label>
+                Etiqueta
+                <input name="tag" type="text" placeholder="Clásico" />
+              </label>
+              <label>
+                Detalle
+                <input name="detail" type="text" placeholder="Masa al huevo, corte ancho" required />
+              </label>
+              <label>
+                Descripción
+                <textarea name="description" rows="3" placeholder="Texto breve para la tarjeta" required></textarea>
+              </label>
+              <button class="btn btn-primary" type="submit">Guardar producto</button>
+            </form>
+          </div>
+
+          <div class="admin-pane" data-admin-pane="combos">
+            <form class="admin-form" data-combo-form>
+              <label>
+                Combo
+                <input name="name" type="text" placeholder="Ej: Combo domingo" required />
+              </label>
+              <label>
+                Etiqueta
+                <input name="tag" type="text" placeholder="Combo" />
+              </label>
+              <label>
+                Incluye
+                <input name="detail" type="text" placeholder="2 fideos + 1 salsa" required />
+              </label>
+              <label>
+                Descripción
+                <textarea name="description" rows="3" placeholder="Texto breve para la tarjeta" required></textarea>
+              </label>
+              <button class="btn btn-primary" type="submit">Guardar combo</button>
+            </form>
+          </div>
+
+          <div class="admin-pane" data-admin-pane="offers">
+            <form class="admin-form" data-offer-form>
+              <label>
+                Oferta
+                <input name="name" type="text" placeholder="Ej: Semana de sorrentinos" required />
+              </label>
+              <label>
+                Etiqueta
+                <input name="tag" type="text" placeholder="Oferta" />
+              </label>
+              <label>
+                Detalle
+                <input name="detail" type="text" placeholder="15% off hasta agotar stock" required />
+              </label>
+              <label>
+                Desde
+                <input name="start" type="date" required />
+              </label>
+              <label>
+                Hasta
+                <input name="end" type="date" required />
+              </label>
+              <label>
+                Descripción
+                <textarea name="description" rows="3" placeholder="Texto breve para la oferta" required></textarea>
+              </label>
+              <button class="btn btn-primary" type="submit">Guardar oferta</button>
+            </form>
+          </div>
+
+          <div class="admin-list" data-admin-list></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="toast" role="status" aria-live="polite" data-toast>Mensaje copiado</div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
