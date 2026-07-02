@@ -48,6 +48,7 @@ a {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -463,6 +464,26 @@ button {
   background-size: 42px 42px;
 }
 
+.sauces-section {
+  background: var(--cream-100);
+}
+
+.sauce-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sauce-list span {
+  border: 1px solid rgba(67, 0, 16, 0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--wine-900);
+  padding: 12px 16px;
+  font-weight: 800;
+  box-shadow: 0 14px 34px rgba(67, 0, 16, 0.06);
+}
+
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -525,6 +546,28 @@ button {
   color: var(--cream-50);
 }
 
+.offer-card .order-options label,
+.offer-card .salt-field {
+  color: var(--cream-50);
+}
+
+.offer-card .order-options select,
+.offer-card .salt-option span {
+  border-color: rgba(248, 234, 220, 0.22);
+  background: rgba(255, 250, 245, 0.1);
+  color: var(--cream-50);
+}
+
+.offer-card .order-options select option {
+  color: var(--wine-900);
+}
+
+.offer-card .salt-option input:checked + span {
+  background: var(--cream-100);
+  border-color: var(--cream-100);
+  color: var(--wine-900);
+}
+
 .offer-card .qty-btn:hover,
 .offer-card .qty-btn:focus-visible {
   background: var(--cream-100);
@@ -554,7 +597,7 @@ button {
 }
 
 .product-card {
-  min-height: 320px;
+  min-height: 440px;
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -609,6 +652,86 @@ button {
   margin: 0;
   color: var(--muted);
   line-height: 1.65;
+}
+
+.order-options {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.order-options label,
+.salt-field {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--wine-900);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.salt-field legend {
+  padding: 0;
+}
+
+.order-options select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(67, 0, 16, 0.16);
+  border-radius: var(--radius);
+  background: var(--cream-50);
+  color: var(--ink);
+  padding: 0 13px;
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.order-options select:focus {
+  border-color: var(--wine-800);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(91, 6, 25, 0.08);
+}
+
+.salt-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.salt-option {
+  position: relative;
+}
+
+.salt-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.salt-option span {
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(67, 0, 16, 0.16);
+  border-radius: 999px;
+  background: var(--cream-50);
+  color: var(--wine-900);
+  font-weight: 900;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.salt-option input:checked + span {
+  background: var(--wine-900);
+  border-color: var(--wine-900);
+  color: var(--cream-50);
+}
+
+.salt-option input:focus-visible + span,
+.salt-option span:hover {
+  transform: translateY(-2px);
+  border-color: rgba(67, 0, 16, 0.36);
 }
 
 .product-controls {

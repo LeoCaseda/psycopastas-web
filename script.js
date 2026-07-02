@@ -1,50 +1,62 @@
 const WHATSAPP_NUMBER = "";
 const INSTAGRAM_LINK = "https://www.instagram.com/psycopastas/";
 const ADMIN_KEY = "psyco2026";
-const CATALOG_STORAGE_KEY = "psycopastas.catalog.v3";
+const CATALOG_STORAGE_KEY = "psycopastas.catalog.v4";
 const ADMIN_SESSION_KEY = "psycopastas.admin.unlocked";
+const OPTION_SEPARATOR = "|||";
+
+const SAUCE_OPTIONS = [
+  "Blanca / sin salsa",
+  "Salsa roja",
+  "Salsa bolognesa",
+  "A la crema",
+  "Salsa mixta",
+  "Salsa de pimiento",
+];
+
+const SALT_OPTIONS = ["Con sal", "Sin sal"];
 
 const DEFAULT_CATALOG = {
   products: [
     {
-      id: "product-fideos-caseros",
+      id: "product-fettuccine",
       type: "product",
-      name: "Fideos caseros",
+      name: "Fettuccine",
       tag: "Clásico",
-      detail: "Masa al huevo, corte ancho",
-      description: "Una receta simple, artesanal y bien de casa, ideal para acompañar con salsas intensas.",
+      detail: "Pasta artesanal de corte ancho",
+      description: "Cintas caseras con buena textura, ideales para acompañar con salsas intensas.",
     },
     {
-      id: "product-ravioles",
-      type: "product",
-      name: "Ravioles",
-      tag: "Rellenos",
-      detail: "Rellenos de estación",
-      description: "Cuadraditos generosos, hechos con receta familiar y pensados para una mesa abundante.",
-    },
-    {
-      id: "product-sorrentinos",
-      type: "product",
-      name: "Sorrentinos",
-      tag: "Premium",
-      detail: "Formato grande y relleno abundante",
-      description: "Redondos, protagonistas y con ese sabor casero que convierte cualquier comida en plan.",
-    },
-    {
-      id: "product-noquis",
+      id: "product-noquis-papa",
       type: "product",
       name: "Ñoquis de papa",
       tag: "Suaves",
-      detail: "Suaves, caseros y livianos",
-      description: "Bocados tiernos, artesanales y listos para disfrutar con manteca, crema o estofado.",
+      detail: "Ñoquis artesanales de papa",
+      description: "Bocados tiernos, simples y bien de casa para una comida abundante.",
     },
     {
-      id: "product-canelones",
+      id: "product-noquis-zapallo",
       type: "product",
-      name: "Canelones",
-      tag: "Casa",
-      detail: "Rellenos, salsa y gratinado opcional",
-      description: "Para esos almuerzos con mantel largo, receta de familia y ganas de algo especial.",
+      name: "Ñoquis de zapallo",
+      tag: "Especial",
+      detail: "Ñoquis artesanales de zapallo",
+      description: "Una opción suave y distinta, con sabor casero y personalidad propia.",
+    },
+    {
+      id: "product-sorrentinos-jyq",
+      type: "product",
+      name: "Sorrentinos JyQ",
+      tag: "Rellenos",
+      detail: "Jamón y queso",
+      description: "Sorrentinos grandes, clásicos y pensados para una comida protagonista.",
+    },
+    {
+      id: "product-sorrentinos-zym",
+      type: "product",
+      name: "Sorrentinos ZyM",
+      tag: "Rellenos",
+      detail: "Zapallo y muzzarella",
+      description: "Una combinación cremosa y artesanal para salir del clásico de siempre.",
     },
   ],
   combos: [],
@@ -146,6 +158,35 @@ function findOrderItem(id) {
   return getOrderableItems().find((item) => item.id === id);
 }
 
+function createSelectionKey(id, sauce, salt) {
+  return [id, sauce, salt].join(OPTION_SEPARATOR);
+}
+
+function getCardOptions(card) {
+  const sauce = card.querySelector("[data-sauce-select]")?.value || SAUCE_OPTIONS[0];
+  const salt = card.querySelector("[data-salt-option]:checked")?.value || SALT_OPTIONS[0];
+
+  return { sauce, salt };
+}
+
+function getSelectionQty(id, sauce, salt) {
+  return quantities.get(createSelectionKey(id, sauce, salt))?.qty ?? 0;
+}
+
+function syncCardQuantity(card) {
+  if (!card) return;
+
+  const id = card.dataset.orderItem;
+  const { sauce, salt } = getCardOptions(card);
+  const output = card.querySelector("[data-current-qty]");
+
+  if (output) output.textContent = getSelectionQty(id, sauce, salt);
+}
+
+function syncAllCardQuantities() {
+  document.querySelectorAll("[data-order-item]").forEach(syncCardQuantity);
+}
+
 function setHeaderState() {
   header.classList.toggle("is-scrolled", window.scrollY > 24);
 }
@@ -167,6 +208,8 @@ function buildMessage() {
   if (products.length) {
     products.forEach((item) => {
       lines.push(`- ${item.qty} x ${item.name} (${item.detail})`);
+      lines.push(`  Salsa: ${item.sauce}`);
+      lines.push(`  Sal: ${item.salt}`);
     });
   } else {
     lines.push("- Me gustaría consultar disponibilidad.");
@@ -213,7 +256,25 @@ function showToast(message) {
 }
 
 function renderOrderCard(item, index, extraClass = "") {
-  const qty = quantities.get(item.id)?.qty ?? 0;
+  const defaultQty = getSelectionQty(item.id, SAUCE_OPTIONS[0], SALT_OPTIONS[0]);
+  const saltName = `salt-${item.id}`;
+  const sauceOptions = SAUCE_OPTIONS.map(
+    (sauce) => `<option value="${escapeHTML(sauce)}">${escapeHTML(sauce)}</option>`
+  ).join("");
+  const saltOptions = SALT_OPTIONS.map(
+    (salt, saltIndex) => `
+      <label class="salt-option">
+        <input
+          type="radio"
+          name="${escapeHTML(saltName)}"
+          value="${escapeHTML(salt)}"
+          data-salt-option
+          ${saltIndex === 0 ? "checked" : ""}
+        />
+        <span>${escapeHTML(salt)}</span>
+      </label>
+    `
+  ).join("");
 
   const period =
     item.type === "offer"
@@ -232,9 +293,25 @@ function renderOrderCard(item, index, extraClass = "") {
 
       ${period}
 
+      <div class="order-options">
+        <label>
+          Salsa
+          <select data-sauce-select aria-label="Elegir salsa para ${escapeHTML(item.name)}">
+            ${sauceOptions}
+          </select>
+        </label>
+
+        <fieldset class="salt-field">
+          <legend>Sal</legend>
+          <div class="salt-options">
+            ${saltOptions}
+          </div>
+        </fieldset>
+      </div>
+
       <div class="product-controls">
         <button class="qty-btn" type="button" data-action="decrease" aria-label="Restar ${escapeHTML(item.name)}">-</button>
-        <output data-qty-for="${escapeHTML(item.id)}">${qty}</output>
+        <output data-current-qty>${defaultQty}</output>
         <button class="qty-btn" type="button" data-action="increase" aria-label="Sumar ${escapeHTML(item.name)}">+</button>
       </div>
     </article>
@@ -250,17 +327,6 @@ function renderCatalog() {
   offersGrid.innerHTML = activeOffers.length
     ? activeOffers.map((item, index) => renderOrderCard(item, index + 1, "offer-card")).join("")
     : '<p class="empty-panel">No hay ofertas activas en este momento.</p>';
-
-  getOrderableItems().forEach((item) => {
-    const current = quantities.get(item.id);
-
-    quantities.set(item.id, {
-      id: item.id,
-      name: item.name,
-      detail: item.detail,
-      qty: current?.qty ?? 0,
-    });
-  });
 
   renderSummary();
 
@@ -280,7 +346,7 @@ function renderSummary() {
           <div class="summary-item">
             <strong>${escapeHTML(item.name)}</strong>
             <span>${item.qty}</span>
-            <small>${escapeHTML(item.detail)}</small>
+            <small>${escapeHTML(item.detail)} · ${escapeHTML(item.sauce)} · ${escapeHTML(item.salt)}</small>
           </div>
         `
       )
@@ -292,23 +358,30 @@ function renderSummary() {
 }
 
 function syncQuantityOutputs(id, qty) {
-  document.querySelectorAll("[data-qty-for]").forEach((output) => {
-    if (output.dataset.qtyFor === id) {
-      output.textContent = qty;
-    }
-  });
+  syncAllCardQuantities();
 }
 
-function updateQuantity(id, nextQty) {
+function updateQuantity(id, sauce, salt, nextQty) {
   const item = findOrderItem(id);
   if (!item) return;
 
   const qty = Math.max(0, Math.min(99, nextQty));
+  const key = createSelectionKey(id, sauce, salt);
 
-  quantities.set(id, {
+  if (qty === 0) {
+    quantities.delete(key);
+    syncAllCardQuantities();
+    renderSummary();
+    return;
+  }
+
+  quantities.set(key, {
     id,
+    key,
     name: item.name,
     detail: item.detail,
+    sauce,
+    salt,
     qty,
   });
 
@@ -317,10 +390,8 @@ function updateQuantity(id, nextQty) {
 }
 
 function clearQuantities() {
-  quantities.forEach((item, id) => {
-    item.qty = 0;
-    syncQuantityOutputs(id, 0);
-  });
+  quantities.clear();
+  syncAllCardQuantities();
 
   renderSummary();
 }
@@ -463,13 +534,15 @@ document.addEventListener("click", (event) => {
 
   if (quantityButton) {
     const card = quantityButton.closest("[data-order-item]");
-    const item = quantities.get(card?.dataset.orderItem);
+    const item = findOrderItem(card?.dataset.orderItem);
 
     if (!card || !item) return;
 
     const change = quantityButton.dataset.action === "increase" ? 1 : -1;
+    const { sauce, salt } = getCardOptions(card);
+    const currentQty = getSelectionQty(card.dataset.orderItem, sauce, salt);
 
-    updateQuantity(card.dataset.orderItem, item.qty + change);
+    updateQuantity(card.dataset.orderItem, sauce, salt, currentQty + change);
     return;
   }
 
@@ -497,13 +570,21 @@ document.addEventListener("click", (event) => {
     const id = deleteButton.dataset.adminDelete;
 
     catalog[type] = catalog[type].filter((item) => item.id !== id);
-    quantities.delete(id);
+    [...quantities.keys()].forEach((key) => {
+      if (key.startsWith(`${id}${OPTION_SEPARATOR}`)) quantities.delete(key);
+    });
 
     saveCatalog();
     renderCatalog();
     renderAdminList();
     showToast("Elemento eliminado");
   }
+});
+
+document.addEventListener("change", (event) => {
+  if (!event.target.closest("[data-sauce-select], [data-salt-option]")) return;
+
+  syncCardQuantity(event.target.closest("[data-order-item]"));
 });
 
 clearButton.addEventListener("click", clearQuantities);
