@@ -67,6 +67,7 @@ const DEFAULT_CATALOG = {
 
 const quantities = new Map();
 let catalog = loadCatalog();
+let editingAdminItem = null;
 
 const header = document.querySelector("[data-header]");
 const nav = document.querySelector("[data-nav]");
@@ -158,6 +159,10 @@ function getOrderableItems() {
 
 function findOrderItem(id) {
   return getOrderableItems().find((item) => item.id === id);
+}
+
+function hasConfigurableSauce(item) {
+  return ["combo", "offer"].includes(item.type);
 }
 
 function getPresentationOptions(item) {
@@ -269,7 +274,7 @@ function showToast(message) {
 function renderOrderCard(item, index, extraClass = "") {
   const presentationOptions = getPresentationOptions(item);
   const defaultPresentation = presentationOptions[0] || "";
-  const hasFixedSauce = item.type === "offer" && item.fixedSauce;
+  const hasFixedSauce = hasConfigurableSauce(item) && item.fixedSauce;
   const defaultSauce = hasFixedSauce ? item.fixedSauce : SAUCE_OPTIONS[0];
   const defaultQty = getSelectionQty(item.id, defaultPresentation, defaultSauce, SALT_OPTIONS[0]);
   const saltName = `salt-${item.id}`;
@@ -450,6 +455,7 @@ function clearQuantities() {
 function readAdminItem(form, type) {
   const data = new FormData(form);
   const fixedSauce = data.get("fixedSauce") || "";
+  const supportsSauceConfig = ["combo", "offer"].includes(type);
 
   return {
     id: createId(type),
@@ -460,9 +466,78 @@ function readAdminItem(form, type) {
     description: data.get("description")?.trim(),
     start: data.get("start") || "",
     end: data.get("end") || "",
-    sauceMode: type === "offer" && fixedSauce ? "fixed" : "free",
-    fixedSauce: type === "offer" ? fixedSauce : "",
+    sauceMode: supportsSauceConfig && fixedSauce ? "fixed" : "free",
+    fixedSauce: supportsSauceConfig ? fixedSauce : "",
   };
+}
+
+function clearSelectionsForItem(id) {
+  [...quantities.keys()].forEach((key) => {
+    if (key.startsWith(`${id}${OPTION_SEPARATOR}`)) quantities.delete(key);
+  });
+}
+
+function resetAdminForm(form, buttonLabel) {
+  form.reset();
+  delete form.dataset.editingId;
+  const button = form.querySelector("button[type='submit']");
+  if (button) button.textContent = buttonLabel;
+  editingAdminItem = null;
+}
+
+function fillAdminForm(collection, item) {
+  const form = document.querySelector(`[data-${collection.slice(0, -1)}-form]`);
+  if (!form) return;
+
+  form.dataset.editingId = item.id;
+  form.elements.name.value = item.name || "";
+  form.elements.tag.value = item.tag || "";
+  form.elements.detail.value = item.detail || "";
+  form.elements.description.value = item.description || "";
+
+  if (form.elements.start) form.elements.start.value = item.start || "";
+  if (form.elements.end) form.elements.end.value = item.end || "";
+  if (form.elements.fixedSauce) form.elements.fixedSauce.value = item.fixedSauce || "";
+
+  const labels = {
+    products: "Actualizar producto",
+    combos: "Actualizar combo",
+    offers: "Actualizar oferta",
+  };
+
+  const button = form.querySelector("button[type='submit']");
+  if (button) button.textContent = labels[collection];
+
+  editingAdminItem = { collection, id: item.id };
+  activateAdminTab(collection === "products" ? "products" : collection === "combos" ? "combos" : "offers");
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function saveAdminItem(form, collection, type, successLabel, updateLabel, defaultButtonLabel) {
+  const item = readAdminItem(form, type);
+  const editingId = form.dataset.editingId;
+
+  if (editingId) {
+    const index = catalog[collection].findIndex((current) => current.id === editingId);
+    const updated = { ...item, id: editingId };
+
+    if (index >= 0) {
+      catalog[collection][index] = updated;
+    } else {
+      catalog[collection].push(updated);
+    }
+
+    clearSelectionsForItem(editingId);
+    showToast(updateLabel);
+  } else {
+    catalog[collection].push(item);
+    showToast(successLabel);
+  }
+
+  saveCatalog();
+  resetAdminForm(form, defaultButtonLabel);
+  renderCatalog();
+  renderAdminList();
 }
 
 function renderAdminList() {
@@ -475,7 +550,7 @@ function renderAdminList() {
         ? items
             .map((item) => {
               const range = item.type === "offer" ? ` · ${formatDate(item.start)} al ${formatDate(item.end)}` : "";
-              const sauce = item.type === "offer" && item.fixedSauce ? ` · Salsa fija: ${item.fixedSauce}` : "";
+              const sauce = hasConfigurableSauce(item) && item.fixedSauce ? ` · Salsa fija: ${item.fixedSauce}` : "";
 
               return `
                 <div class="admin-item">
@@ -484,9 +559,14 @@ function renderAdminList() {
                     <small>${escapeHTML(item.detail)}${range}${escapeHTML(sauce)}</small>
                   </div>
 
-                  <button class="admin-delete" type="button" data-admin-delete="${escapeHTML(item.id)}" data-admin-type="${type}">
-                    Eliminar
-                  </button>
+                  <div class="admin-actions">
+                    <button class="admin-edit" type="button" data-admin-edit="${escapeHTML(item.id)}" data-admin-type="${type}">
+                      Editar
+                    </button>
+                    <button class="admin-delete" type="button" data-admin-delete="${escapeHTML(item.id)}" data-admin-type="${type}">
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
               `;
             })
@@ -627,6 +707,17 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const editButton = event.target.closest("[data-admin-edit]");
+
+  if (editButton) {
+    const type = editButton.dataset.adminType;
+    const id = editButton.dataset.adminEdit;
+    const item = catalog[type].find((current) => current.id === id);
+
+    if (item) fillAdminForm(type, item);
+    return;
+  }
+
   const deleteButton = event.target.closest("[data-admin-delete]");
 
   if (deleteButton) {
@@ -634,9 +725,7 @@ document.addEventListener("click", (event) => {
     const id = deleteButton.dataset.adminDelete;
 
     catalog[type] = catalog[type].filter((item) => item.id !== id);
-    [...quantities.keys()].forEach((key) => {
-      if (key.startsWith(`${id}${OPTION_SEPARATOR}`)) quantities.delete(key);
-    });
+    clearSelectionsForItem(id);
 
     saveCatalog();
     renderCatalog();
@@ -699,29 +788,13 @@ adminLogin.addEventListener("submit", (event) => {
 document.querySelector("[data-product-form]").addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const item = readAdminItem(event.currentTarget, "product");
-
-  catalog.products.push(item);
-  saveCatalog();
-
-  event.currentTarget.reset();
-  renderCatalog();
-  renderAdminList();
-  showToast("Producto guardado");
+  saveAdminItem(event.currentTarget, "products", "product", "Producto guardado", "Producto actualizado", "Guardar producto");
 });
 
 document.querySelector("[data-combo-form]").addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const item = readAdminItem(event.currentTarget, "combo");
-
-  catalog.combos.push(item);
-  saveCatalog();
-
-  event.currentTarget.reset();
-  renderCatalog();
-  renderAdminList();
-  showToast("Combo guardado");
+  saveAdminItem(event.currentTarget, "combos", "combo", "Combo guardado", "Combo actualizado", "Guardar combo");
 });
 
 document.querySelector("[data-offer-form]").addEventListener("submit", (event) => {
@@ -734,13 +807,7 @@ document.querySelector("[data-offer-form]").addEventListener("submit", (event) =
     return;
   }
 
-  catalog.offers.push(item);
-  saveCatalog();
-
-  event.currentTarget.reset();
-  renderCatalog();
-  renderAdminList();
-  showToast("Oferta guardada");
+  saveAdminItem(event.currentTarget, "offers", "offer", "Oferta guardada", "Oferta actualizada", "Guardar oferta");
 });
 
 document.addEventListener("keydown", (event) => {
