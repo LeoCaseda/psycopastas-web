@@ -547,12 +547,14 @@ button {
 }
 
 .offer-card .order-options label,
-.offer-card .salt-field {
+.offer-card .salt-field,
+.offer-card .fixed-sauce {
   color: var(--cream-50);
 }
 
 .offer-card .order-options select,
-.offer-card .salt-option span {
+.offer-card .salt-option span,
+.offer-card .fixed-sauce {
   border-color: rgba(248, 234, 220, 0.22);
   background: rgba(255, 250, 245, 0.1);
   color: var(--cream-50);
@@ -661,7 +663,8 @@ button {
 }
 
 .order-options label,
-.salt-field {
+.salt-field,
+.fixed-sauce {
   display: grid;
   gap: 8px;
   margin: 0;
@@ -686,6 +689,24 @@ button {
   padding: 0 13px;
   outline: none;
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.fixed-sauce {
+  border: 1px solid rgba(67, 0, 16, 0.16);
+  border-radius: var(--radius);
+  background: var(--cream-50);
+  padding: 12px 13px;
+}
+
+.fixed-sauce span {
+  color: var(--wine-900);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.fixed-sauce strong {
+  color: var(--ink);
+  font-size: 0.98rem;
 }
 
 .order-options select:focus {
@@ -970,12 +991,40 @@ blockquote {
 }
 
 .summary-item strong {
+  display: block;
   color: var(--wine-900);
 }
 
 .summary-item span,
 .summary-item small {
   color: var(--muted);
+}
+
+.summary-item small {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.summary-remove {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 32px;
+  border: 1px solid rgba(67, 0, 16, 0.16);
+  border-radius: 999px;
+  background: var(--cream-100);
+  color: var(--wine-900);
+  padding: 0 12px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.summary-remove:hover,
+.summary-remove:focus-visible {
+  background: var(--wine-900);
+  color: var(--cream-50);
+  transform: translateY(-1px);
 }
 
 .summary-cta,
@@ -1164,6 +1213,7 @@ blockquote {
 
 .admin-login input,
 .admin-form input,
+.admin-form select,
 .admin-form textarea {
   width: 100%;
   border: 1px solid rgba(67, 0, 16, 0.16);
@@ -1176,6 +1226,7 @@ blockquote {
 
 .admin-login input:focus,
 .admin-form input:focus,
+.admin-form select:focus,
 .admin-form textarea:focus {
   border-color: var(--wine-800);
   box-shadow: 0 0 0 4px rgba(91, 6, 25, 0.08);
@@ -1594,4 +1645,73 @@ blockquote {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Contraste final para ofertas: evita que el hover general de tarjetas lave el contenido. */
+.offer-card,
+.offer-card:hover,
+.offer-card:focus-within {
+  background: linear-gradient(145deg, #fffaf5, #f8eadc) !important;
+  border-color: rgba(216, 174, 135, 0.72) !important;
+  color: var(--wine-900) !important;
+  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.22);
+}
+
+.offer-card:hover,
+.offer-card:focus-within {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 68px rgba(0, 0, 0, 0.28);
+}
+
+.offer-card h3,
+.offer-card p,
+.offer-card .product-number,
+.offer-card .offer-date,
+.offer-card .order-options label,
+.offer-card .salt-field,
+.offer-card .fixed-sauce span,
+.offer-card .fixed-sauce strong,
+.offer-card .product-controls output {
+  color: var(--wine-900) !important;
+}
+
+.offer-card .product-tag {
+  border-color: rgba(216, 174, 135, 0.72) !important;
+  background: rgba(216, 174, 135, 0.16);
+  color: #9a5c30 !important;
+}
+
+.offer-card .order-options select,
+.offer-card .salt-option span,
+.offer-card .fixed-sauce,
+.offer-card .product-controls output {
+  border-color: rgba(67, 0, 16, 0.16) !important;
+  background: #ffffff !important;
+  color: var(--wine-900) !important;
+}
+
+.offer-card .order-options select option {
+  color: var(--wine-900) !important;
+  background: #ffffff !important;
+}
+
+.offer-card .salt-option input:not(:checked) + span {
+  color: var(--wine-900) !important;
+}
+
+.offer-card .salt-option input:checked + span {
+  background: var(--wine-900) !important;
+  border-color: var(--wine-900) !important;
+  color: var(--cream-50) !important;
+}
+
+.offer-card .qty-btn {
+  border-color: rgba(67, 0, 16, 0.22) !important;
+  color: var(--wine-900) !important;
+}
+
+.offer-card .qty-btn:hover,
+.offer-card .qty-btn:focus-visible {
+  background: var(--wine-900) !important;
+  color: var(--cream-50) !important;
 }

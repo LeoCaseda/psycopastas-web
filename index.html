@@ -133,7 +133,8 @@
           <h2>Promos con fecha y opciones libres para elegir.</h2>
           <p>
             Las ofertas cargadas desde gestión aparecen acá mientras están vigentes.
-            Al sumarlas al pedido también podés elegir salsa y si van con sal o sin sal.
+            Algunas tienen salsa fija y otras permiten elegirla; en todas podés definir
+            si van con sal o sin sal.
           </p>
         </div>
 
@@ -360,6 +361,18 @@
               <label>
                 Detalle
                 <input name="detail" type="text" placeholder="15% off hasta agotar stock" required />
+              </label>
+              <label>
+                Salsa de la oferta
+                <select name="fixedSauce">
+                  <option value="">Cliente elige salsa</option>
+                  <option value="Blanca / sin salsa">Blanca / sin salsa</option>
+                  <option value="Salsa roja">Salsa roja</option>
+                  <option value="Salsa bolognesa">Salsa bolognesa</option>
+                  <option value="A la crema">A la crema</option>
+                  <option value="Salsa mixta">Salsa mixta</option>
+                  <option value="Salsa de pimiento">Salsa de pimiento</option>
+                </select>
               </label>
               <label>
                 Desde

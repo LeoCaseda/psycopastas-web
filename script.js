@@ -15,6 +15,8 @@ const SAUCE_OPTIONS = [
 ];
 
 const SALT_OPTIONS = ["Con sal", "Sin sal"];
+const GRAM_PRESENTATIONS = ["500 g", "1000 g", "Más de 1 kg"];
+const DOZEN_PRESENTATIONS = ["1/2 docena", "1 docena", "Más de 1 docena"];
 
 const DEFAULT_CATALOG = {
   products: [
@@ -158,29 +160,37 @@ function findOrderItem(id) {
   return getOrderableItems().find((item) => item.id === id);
 }
 
-function createSelectionKey(id, sauce, salt) {
-  return [id, sauce, salt].join(OPTION_SEPARATOR);
+function getPresentationOptions(item) {
+  if (item.type !== "product") return [];
+
+  return item.name.toLowerCase().includes("sorrentinos") ? DOZEN_PRESENTATIONS : GRAM_PRESENTATIONS;
+}
+
+function createSelectionKey(id, presentation, sauce, salt) {
+  return [id, presentation, sauce, salt].join(OPTION_SEPARATOR);
 }
 
 function getCardOptions(card) {
-  const sauce = card.querySelector("[data-sauce-select]")?.value || SAUCE_OPTIONS[0];
+  const presentation = card.querySelector("[data-presentation-select]")?.value || "";
+  const fixedSauce = card.querySelector("[data-fixed-sauce]")?.dataset.fixedSauce;
+  const sauce = fixedSauce || card.querySelector("[data-sauce-select]")?.value || SAUCE_OPTIONS[0];
   const salt = card.querySelector("[data-salt-option]:checked")?.value || SALT_OPTIONS[0];
 
-  return { sauce, salt };
+  return { presentation, sauce, salt };
 }
 
-function getSelectionQty(id, sauce, salt) {
-  return quantities.get(createSelectionKey(id, sauce, salt))?.qty ?? 0;
+function getSelectionQty(id, presentation, sauce, salt) {
+  return quantities.get(createSelectionKey(id, presentation, sauce, salt))?.qty ?? 0;
 }
 
 function syncCardQuantity(card) {
   if (!card) return;
 
   const id = card.dataset.orderItem;
-  const { sauce, salt } = getCardOptions(card);
+  const { presentation, sauce, salt } = getCardOptions(card);
   const output = card.querySelector("[data-current-qty]");
 
-  if (output) output.textContent = getSelectionQty(id, sauce, salt);
+  if (output) output.textContent = getSelectionQty(id, presentation, sauce, salt);
 }
 
 function syncAllCardQuantities() {
@@ -208,6 +218,7 @@ function buildMessage() {
   if (products.length) {
     products.forEach((item) => {
       lines.push(`- ${item.qty} x ${item.name} (${item.detail})`);
+      if (item.presentation) lines.push(`  Presentación: ${item.presentation}`);
       lines.push(`  Salsa: ${item.sauce}`);
       lines.push(`  Sal: ${item.salt}`);
     });
@@ -256,11 +267,42 @@ function showToast(message) {
 }
 
 function renderOrderCard(item, index, extraClass = "") {
-  const defaultQty = getSelectionQty(item.id, SAUCE_OPTIONS[0], SALT_OPTIONS[0]);
+  const presentationOptions = getPresentationOptions(item);
+  const defaultPresentation = presentationOptions[0] || "";
+  const hasFixedSauce = item.type === "offer" && item.fixedSauce;
+  const defaultSauce = hasFixedSauce ? item.fixedSauce : SAUCE_OPTIONS[0];
+  const defaultQty = getSelectionQty(item.id, defaultPresentation, defaultSauce, SALT_OPTIONS[0]);
   const saltName = `salt-${item.id}`;
+  const presentationSelect = presentationOptions.length
+    ? `
+      <label>
+        Presentación
+        <select data-presentation-select aria-label="Elegir presentación para ${escapeHTML(item.name)}">
+          ${presentationOptions
+            .map((presentation) => `<option value="${escapeHTML(presentation)}">${escapeHTML(presentation)}</option>`)
+            .join("")}
+        </select>
+      </label>
+    `
+    : "";
   const sauceOptions = SAUCE_OPTIONS.map(
     (sauce) => `<option value="${escapeHTML(sauce)}">${escapeHTML(sauce)}</option>`
   ).join("");
+  const sauceControl = hasFixedSauce
+    ? `
+      <div class="fixed-sauce" data-fixed-sauce="${escapeHTML(item.fixedSauce)}">
+        <span>Salsa incluida</span>
+        <strong>${escapeHTML(item.fixedSauce)}</strong>
+      </div>
+    `
+    : `
+      <label>
+        Salsa
+        <select data-sauce-select aria-label="Elegir salsa para ${escapeHTML(item.name)}">
+          ${sauceOptions}
+        </select>
+      </label>
+    `;
   const saltOptions = SALT_OPTIONS.map(
     (salt, saltIndex) => `
       <label class="salt-option">
@@ -294,12 +336,8 @@ function renderOrderCard(item, index, extraClass = "") {
       ${period}
 
       <div class="order-options">
-        <label>
-          Salsa
-          <select data-sauce-select aria-label="Elegir salsa para ${escapeHTML(item.name)}">
-            ${sauceOptions}
-          </select>
-        </label>
+        ${presentationSelect}
+        ${sauceControl}
 
         <fieldset class="salt-field">
           <legend>Sal</legend>
@@ -344,9 +382,21 @@ function renderSummary() {
       .map(
         (item) => `
           <div class="summary-item">
-            <strong>${escapeHTML(item.name)}</strong>
+            <div>
+              <strong>${escapeHTML(item.name)}</strong>
+              <small>
+                ${escapeHTML([item.detail, item.presentation, item.sauce, item.salt].filter(Boolean).join(" · "))}
+              </small>
+            </div>
             <span>${item.qty}</span>
-            <small>${escapeHTML(item.detail)} · ${escapeHTML(item.sauce)} · ${escapeHTML(item.salt)}</small>
+            <button
+              class="summary-remove"
+              type="button"
+              data-remove-selection="${escapeHTML(item.key)}"
+              aria-label="Eliminar ${escapeHTML(item.name)} de la selección"
+            >
+              Eliminar
+            </button>
           </div>
         `
       )
@@ -361,12 +411,12 @@ function syncQuantityOutputs(id, qty) {
   syncAllCardQuantities();
 }
 
-function updateQuantity(id, sauce, salt, nextQty) {
+function updateQuantity(id, presentation, sauce, salt, nextQty) {
   const item = findOrderItem(id);
   if (!item) return;
 
   const qty = Math.max(0, Math.min(99, nextQty));
-  const key = createSelectionKey(id, sauce, salt);
+  const key = createSelectionKey(id, presentation, sauce, salt);
 
   if (qty === 0) {
     quantities.delete(key);
@@ -380,6 +430,7 @@ function updateQuantity(id, sauce, salt, nextQty) {
     key,
     name: item.name,
     detail: item.detail,
+    presentation,
     sauce,
     salt,
     qty,
@@ -398,6 +449,7 @@ function clearQuantities() {
 
 function readAdminItem(form, type) {
   const data = new FormData(form);
+  const fixedSauce = data.get("fixedSauce") || "";
 
   return {
     id: createId(type),
@@ -408,6 +460,8 @@ function readAdminItem(form, type) {
     description: data.get("description")?.trim(),
     start: data.get("start") || "",
     end: data.get("end") || "",
+    sauceMode: type === "offer" && fixedSauce ? "fixed" : "free",
+    fixedSauce: type === "offer" ? fixedSauce : "",
   };
 }
 
@@ -421,12 +475,13 @@ function renderAdminList() {
         ? items
             .map((item) => {
               const range = item.type === "offer" ? ` · ${formatDate(item.start)} al ${formatDate(item.end)}` : "";
+              const sauce = item.type === "offer" && item.fixedSauce ? ` · Salsa fija: ${item.fixedSauce}` : "";
 
               return `
                 <div class="admin-item">
                   <div>
                     <strong>${escapeHTML(item.name)}</strong>
-                    <small>${escapeHTML(item.detail)}${range}</small>
+                    <small>${escapeHTML(item.detail)}${range}${escapeHTML(sauce)}</small>
                   </div>
 
                   <button class="admin-delete" type="button" data-admin-delete="${escapeHTML(item.id)}" data-admin-type="${type}">
@@ -539,10 +594,19 @@ document.addEventListener("click", (event) => {
     if (!card || !item) return;
 
     const change = quantityButton.dataset.action === "increase" ? 1 : -1;
-    const { sauce, salt } = getCardOptions(card);
-    const currentQty = getSelectionQty(card.dataset.orderItem, sauce, salt);
+    const { presentation, sauce, salt } = getCardOptions(card);
+    const currentQty = getSelectionQty(card.dataset.orderItem, presentation, sauce, salt);
 
-    updateQuantity(card.dataset.orderItem, sauce, salt, currentQty + change);
+    updateQuantity(card.dataset.orderItem, presentation, sauce, salt, currentQty + change);
+    return;
+  }
+
+  const removeSelectionButton = event.target.closest("[data-remove-selection]");
+
+  if (removeSelectionButton) {
+    quantities.delete(removeSelectionButton.dataset.removeSelection);
+    syncAllCardQuantities();
+    renderSummary();
     return;
   }
 
@@ -582,7 +646,7 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("change", (event) => {
-  if (!event.target.closest("[data-sauce-select], [data-salt-option]")) return;
+  if (!event.target.closest("[data-presentation-select], [data-sauce-select], [data-salt-option]")) return;
 
   syncCardQuantity(event.target.closest("[data-order-item]"));
 });
