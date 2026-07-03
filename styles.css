@@ -789,6 +789,28 @@ button {
   line-height: 1.65;
 }
 
+.combo-includes {
+  display: grid;
+  gap: 5px;
+  margin-top: 16px;
+  border-left: 3px solid rgba(91, 6, 25, 0.28);
+  padding-left: 12px;
+}
+
+.combo-includes span {
+  color: var(--wine-900);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.combo-includes strong {
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
 .order-options {
   display: grid;
   gap: 14px;

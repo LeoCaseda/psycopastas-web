@@ -752,6 +752,15 @@ function renderOrderCard(item, index, extraClass = "") {
   const defaultQty = getSelectionQty(item.id, defaultPresentation, defaultSauce, SALT_OPTIONS[0]);
   const saltName = `salt-${item.id}`;
   const presentationControl = renderPresentationControl(item, presentationOptions);
+  const comboIncludes =
+    item.type === "combo" && item.detail
+      ? `
+        <div class="combo-includes">
+          <span>Incluye</span>
+          <strong>${escapeHTML(item.detail)}</strong>
+        </div>
+      `
+      : "";
   const sauceOptions = renderSauceOptions();
   const sauceControl = hasFixedSauce
     ? `
@@ -797,6 +806,7 @@ function renderOrderCard(item, index, extraClass = "") {
 
       <h3>${escapeHTML(item.name)}</h3>
       <p>${escapeHTML(item.description)}</p>
+      ${comboIncludes}
 
       ${period}
 
