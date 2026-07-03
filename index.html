@@ -156,22 +156,19 @@
       </section>
 
       <section class="section sauces-section" id="salsas">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Salsas para acompañar</p>
-          <h2>La salsa se elige como agregado de cada pasta.</h2>
-          <p>
-            No se venden como producto separado: al sumar una pasta u oferta, elegís
-            si va blanca o con salsa roja, bolognesa, crema, mixta o de pimiento.
-          </p>
-        </div>
+        <div class="sauces-wrap">
+          <div class="sauces-copy reveal">
+            <p class="eyebrow">Salsas disponibles</p>
+            <h2>Opciones para acompañar tu pasta.</h2>
+            <p>
+              Las salsas funcionan como acompañamiento: no se venden por separado,
+              sino que se eligen al sumar una pasta, combo u oferta al pedido.
+            </p>
+          </div>
 
-        <div class="sauce-list reveal" aria-label="Opciones de salsa">
-          <span>Blanca / sin salsa</span>
-          <span>Salsa roja</span>
-          <span>Salsa bolognesa</span>
-          <span>A la crema</span>
-          <span>Salsa mixta</span>
-          <span>Salsa de pimiento</span>
+          <div class="sauce-board reveal" data-sauces-list aria-label="Salsas disponibles">
+            <p class="empty-state">Cargando salsas disponibles...</p>
+          </div>
         </div>
       </section>
 
@@ -300,6 +297,7 @@
         <div class="admin-workspace" data-admin-workspace hidden>
           <div class="admin-tabs" role="tablist" aria-label="Gestión de catálogo">
             <button class="is-active" type="button" data-admin-tab="products">Productos</button>
+            <button type="button" data-admin-tab="sauces">Salsas</button>
             <button type="button" data-admin-tab="combos">Combos</button>
             <button type="button" data-admin-tab="offers">Ofertas</button>
           </div>
@@ -326,6 +324,24 @@
             </form>
           </div>
 
+          <div class="admin-pane" data-admin-pane="sauces">
+            <form class="admin-form" data-sauce-form>
+              <label>
+                Salsa
+                <input name="name" type="text" placeholder="Ej: Salsa cuatro quesos" required />
+              </label>
+              <label>
+                Etiqueta
+                <input name="tag" type="text" placeholder="Clásica, suave, especial..." />
+              </label>
+              <label>
+                Descripción
+                <textarea name="description" rows="3" placeholder="Texto breve para explicar la salsa" required></textarea>
+              </label>
+              <button class="btn btn-primary" type="submit">Guardar salsa</button>
+            </form>
+          </div>
+
           <div class="admin-pane" data-admin-pane="combos">
             <form class="admin-form" data-combo-form>
               <label>
@@ -342,14 +358,8 @@
               </label>
               <label>
                 Salsa del combo
-                <select name="fixedSauce">
+                <select name="fixedSauce" data-admin-sauce-select>
                   <option value="">Cliente elige salsa</option>
-                  <option value="Blanca / sin salsa">Blanca / sin salsa</option>
-                  <option value="Salsa roja">Salsa roja</option>
-                  <option value="Salsa bolognesa">Salsa bolognesa</option>
-                  <option value="A la crema">A la crema</option>
-                  <option value="Salsa mixta">Salsa mixta</option>
-                  <option value="Salsa de pimiento">Salsa de pimiento</option>
                 </select>
               </label>
               <label>
@@ -376,14 +386,8 @@
               </label>
               <label>
                 Salsa de la oferta
-                <select name="fixedSauce">
+                <select name="fixedSauce" data-admin-sauce-select>
                   <option value="">Cliente elige salsa</option>
-                  <option value="Blanca / sin salsa">Blanca / sin salsa</option>
-                  <option value="Salsa roja">Salsa roja</option>
-                  <option value="Salsa bolognesa">Salsa bolognesa</option>
-                  <option value="A la crema">A la crema</option>
-                  <option value="Salsa mixta">Salsa mixta</option>
-                  <option value="Salsa de pimiento">Salsa de pimiento</option>
                 </select>
               </label>
               <label>
@@ -409,6 +413,7 @@
 
     <div class="toast" role="status" aria-live="polite" data-toast>Mensaje copiado</div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
   </body>
 </html>

@@ -4,14 +4,64 @@ const ADMIN_KEY = "psyco2026";
 const CATALOG_STORAGE_KEY = "psycopastas.catalog.v4";
 const ADMIN_SESSION_KEY = "psycopastas.admin.unlocked";
 const OPTION_SEPARATOR = "|||";
+const SUPABASE_URL = "https://qsvigjpadxmotfzhnlue.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_wL59UbFVdWW0vm0gVw4thQ_i-go_WIU";
 
-const SAUCE_OPTIONS = [
-  "Blanca / sin salsa",
-  "Salsa roja",
-  "Salsa bolognesa",
-  "A la crema",
-  "Salsa mixta",
-  "Salsa de pimiento",
+const DB_TABLES = {
+  catalog: "catalog_items",
+  sauces: "sauces",
+  orders: "orders",
+};
+
+const DEFAULT_SAUCES = [
+  {
+    id: "sauce-blanca",
+    type: "sauce",
+    name: "Blanca / sin salsa",
+    tag: "Base",
+    detail: "Opción sin salsa",
+    description: "Para quienes prefieren que la pasta sea la protagonista.",
+  },
+  {
+    id: "sauce-roja",
+    type: "sauce",
+    name: "Salsa roja",
+    tag: "Clásica",
+    detail: "Salsa de tomate",
+    description: "Simple, casera y bien compañera.",
+  },
+  {
+    id: "sauce-bolognesa",
+    type: "sauce",
+    name: "Salsa bolognesa",
+    tag: "Intensa",
+    detail: "Salsa con carne",
+    description: "Más cuerpo y sabor para una comida completa.",
+  },
+  {
+    id: "sauce-crema",
+    type: "sauce",
+    name: "A la crema",
+    tag: "Suave",
+    detail: "Salsa cremosa",
+    description: "Cremosa, delicada y perfecta para rellenos.",
+  },
+  {
+    id: "sauce-mixta",
+    type: "sauce",
+    name: "Salsa mixta",
+    tag: "Equilibrada",
+    detail: "Roja y crema",
+    description: "Un punto medio entre lo rojo y lo cremoso.",
+  },
+  {
+    id: "sauce-pimiento",
+    type: "sauce",
+    name: "Salsa de pimiento",
+    tag: "Especial",
+    detail: "Salsa de pimiento",
+    description: "Una opción distinta para salir del clásico.",
+  },
 ];
 
 const SALT_OPTIONS = ["Con sal", "Sin sal"];
@@ -61,6 +111,7 @@ const DEFAULT_CATALOG = {
       description: "Una combinación cremosa y artesanal para salir del clásico de siempre.",
     },
   ],
+  sauces: structuredClone(DEFAULT_SAUCES),
   combos: [],
   offers: [],
 };
@@ -68,12 +119,15 @@ const DEFAULT_CATALOG = {
 const quantities = new Map();
 let catalog = loadCatalog();
 let editingAdminItem = null;
+let supabaseClient = null;
+let supabaseReady = false;
 
 const header = document.querySelector("[data-header]");
 const nav = document.querySelector("[data-nav]");
 const navToggle = document.querySelector("[data-nav-toggle]");
 const productGrid = document.querySelector("[data-products]");
 const offersGrid = document.querySelector("[data-offers]");
+const saucesList = document.querySelector("[data-sauces-list]");
 const summary = document.querySelector("[data-summary]");
 const clearButton = document.querySelector("[data-clear]");
 const copyButton = document.querySelector("[data-copy]");
@@ -108,6 +162,7 @@ function loadCatalog() {
 
     return {
       products: Array.isArray(parsed.products) ? parsed.products : [],
+      sauces: Array.isArray(parsed.sauces) && parsed.sauces.length ? parsed.sauces : structuredClone(DEFAULT_SAUCES),
       combos: Array.isArray(parsed.combos) ? parsed.combos : [],
       offers: Array.isArray(parsed.offers) ? parsed.offers : [],
     };
@@ -118,6 +173,207 @@ function loadCatalog() {
 
 function saveCatalog() {
   localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalog));
+}
+
+function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY || !window.supabase?.createClient) {
+    return null;
+  }
+
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  return supabaseClient;
+}
+
+function toDbItem(item, sortOrder = 0) {
+  return {
+    id: item.id,
+    type: item.type,
+    name: item.name,
+    tag: item.tag || "",
+    detail: item.detail || "",
+    description: item.description || "",
+    start_date: item.start || null,
+    end_date: item.end || null,
+    sauce_mode: item.sauceMode || "free",
+    fixed_sauce: item.fixedSauce || "",
+    sort_order: sortOrder,
+    is_active: true,
+  };
+}
+
+function fromDbItem(item) {
+  return {
+    id: item.id,
+    type: item.type,
+    name: item.name,
+    tag: item.tag || "",
+    detail: item.detail || "",
+    description: item.description || "",
+    start: item.start_date || "",
+    end: item.end_date || "",
+    sauceMode: item.sauce_mode || "free",
+    fixedSauce: item.fixed_sauce || "",
+  };
+}
+
+function toDbSauce(sauce, sortOrder = 0) {
+  return {
+    id: sauce.id,
+    type: "sauce",
+    name: sauce.name,
+    tag: sauce.tag || "Salsa",
+    detail: sauce.detail || sauce.name,
+    description: sauce.description || "",
+    sort_order: sortOrder,
+    is_active: true,
+  };
+}
+
+function fromDbSauce(sauce) {
+  return {
+    id: sauce.id,
+    type: "sauce",
+    name: sauce.name,
+    tag: sauce.tag || "Salsa",
+    detail: sauce.detail || sauce.name,
+    description: sauce.description || "",
+  };
+}
+
+async function loadCatalogFromSupabase() {
+  const client = getSupabaseClient();
+  if (!client) return false;
+
+  const [{ data: items, error: itemsError }, { data: sauces, error: saucesError }] = await Promise.all([
+    client.from(DB_TABLES.catalog).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+    client.from(DB_TABLES.sauces).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+  ]);
+
+  if (itemsError || saucesError) {
+    console.warn("Supabase no pudo cargar el catálogo:", itemsError || saucesError);
+    supabaseReady = false;
+    return false;
+  }
+
+  if (!items?.length && !sauces?.length) {
+    supabaseReady = true;
+    await persistCatalogSnapshotToSupabase();
+    return true;
+  }
+
+  const mappedItems = (items || []).map(fromDbItem);
+  const mappedSauces = (sauces || []).map(fromDbSauce);
+
+  catalog = {
+    products: mappedItems.filter((item) => item.type === "product"),
+    sauces: mappedSauces.length ? mappedSauces : structuredClone(DEFAULT_SAUCES),
+    combos: mappedItems.filter((item) => item.type === "combo"),
+    offers: mappedItems.filter((item) => item.type === "offer"),
+  };
+
+  saveCatalog();
+  supabaseReady = true;
+  return true;
+}
+
+async function persistCatalogSnapshotToSupabase() {
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  const catalogItems = [
+    ...catalog.products.map((item, index) => toDbItem(item, index)),
+    ...catalog.combos.map((item, index) => toDbItem(item, index)),
+    ...catalog.offers.map((item, index) => toDbItem(item, index)),
+  ];
+  const sauceItems = catalog.sauces.map((sauce, index) => toDbSauce(sauce, index));
+
+  const requests = [];
+  if (catalogItems.length) {
+    requests.push(client.from(DB_TABLES.catalog).upsert(catalogItems, { onConflict: "id" }));
+  }
+  if (sauceItems.length) {
+    requests.push(client.from(DB_TABLES.sauces).upsert(sauceItems, { onConflict: "id" }));
+  }
+
+  const results = await Promise.all(requests);
+  const failed = results.find((result) => result.error);
+
+  if (failed) {
+    console.warn("Supabase no pudo inicializar el catálogo:", failed.error);
+    showToast("Catálogo local activo");
+  }
+}
+
+async function persistAdminItem(collection, item) {
+  saveCatalog();
+
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  const items = catalog[collection] || [];
+  const sortOrder = Math.max(0, items.findIndex((current) => current.id === item.id));
+  const table = collection === "sauces" ? DB_TABLES.sauces : DB_TABLES.catalog;
+  const payload = collection === "sauces" ? toDbSauce(item, sortOrder) : toDbItem(item, sortOrder);
+  const { error } = await client.from(table).upsert(payload, { onConflict: "id" });
+
+  if (error) {
+    console.warn("Supabase no pudo guardar el elemento:", error);
+    showToast("Guardado local. Revisá Supabase.");
+  }
+}
+
+async function deleteAdminItemFromSupabase(collection, id) {
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  const table = collection === "sauces" ? DB_TABLES.sauces : DB_TABLES.catalog;
+  const { error } = await client.from(table).delete().eq("id", id);
+
+  if (error) {
+    console.warn("Supabase no pudo eliminar el elemento:", error);
+    showToast("Eliminado local. Revisá Supabase.");
+  }
+}
+
+function getOrderPayload(channel = "manual") {
+  const form = new FormData(orderForm);
+  const selections = [...quantities.values()].filter((item) => item.qty > 0);
+
+  return {
+    customer_name: form.get("name")?.trim() || "",
+    customer_address: form.get("address")?.trim() || "",
+    notes: form.get("notes")?.trim() || "",
+    channel,
+    status: "generated",
+    message: buildMessage(),
+    items: selections.map((item) => ({
+      id: item.id,
+      name: item.name,
+      detail: item.detail,
+      presentation: item.presentation,
+      sauce: item.sauce,
+      salt: item.salt,
+      quantity: item.qty,
+    })),
+  };
+}
+
+async function saveOrderToSupabase(channel = "manual") {
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  const payload = getOrderPayload(channel);
+  const { error } = await client.from(DB_TABLES.orders).insert(payload);
+
+  if (error) {
+    console.warn("Supabase no pudo guardar el pedido:", error);
+    showToast("No se guardó en la base");
+    return;
+  }
+
+  showToast("Pedido guardado");
 }
 
 function createId(prefix) {
@@ -146,6 +402,65 @@ function formatDate(dateString) {
   return new Date(`${dateString}T12:00:00`).toLocaleDateString("es-AR", {
     day: "2-digit",
     month: "short",
+  });
+}
+
+function getSauces() {
+  return Array.isArray(catalog.sauces) && catalog.sauces.length
+    ? catalog.sauces
+    : structuredClone(DEFAULT_SAUCES);
+}
+
+function getSauceOptions() {
+  return getSauces()
+    .map((sauce) => sauce.name?.trim())
+    .filter(Boolean);
+}
+
+function renderSauceOptions(selectedValue = "") {
+  return getSauceOptions()
+    .map(
+      (sauce) =>
+        `<option value="${escapeHTML(sauce)}" ${sauce === selectedValue ? "selected" : ""}>${escapeHTML(sauce)}</option>`
+    )
+    .join("");
+}
+
+function refreshAdminSauceSelects() {
+  document.querySelectorAll("[data-admin-sauce-select]").forEach((select) => {
+    const selected = select.value;
+    select.innerHTML = `<option value="">Cliente elige salsa</option>${renderSauceOptions(selected)}`;
+  });
+}
+
+function renderSaucesList() {
+  if (!saucesList) return;
+
+  const sauces = getSauces();
+
+  saucesList.innerHTML = sauces.length
+    ? sauces
+        .map(
+          (sauce) => `
+            <article class="sauce-row">
+              <div class="sauce-row-marker" aria-hidden="true"></div>
+              <div class="sauce-row-content">
+                <div class="sauce-row-title">
+                  <strong>${escapeHTML(sauce.name)}</strong>
+                  <span>${escapeHTML(sauce.tag || "Salsa")}</span>
+                </div>
+                <p>${escapeHTML(sauce.description || "Opción disponible para acompañar pastas, combos u ofertas.")}</p>
+              </div>
+            </article>
+          `
+        )
+        .join("")
+    : '<p class="empty-state">No hay salsas cargadas en este momento.</p>';
+}
+
+function clearSelectionsUsingSauce(sauceName) {
+  [...quantities.entries()].forEach(([key, item]) => {
+    if (item.sauce === sauceName) quantities.delete(key);
   });
 }
 
@@ -178,7 +493,7 @@ function createSelectionKey(id, presentation, sauce, salt) {
 function getCardOptions(card) {
   const presentation = card.querySelector("[data-presentation-select]")?.value || "";
   const fixedSauce = card.querySelector("[data-fixed-sauce]")?.dataset.fixedSauce;
-  const sauce = fixedSauce || card.querySelector("[data-sauce-select]")?.value || SAUCE_OPTIONS[0];
+  const sauce = fixedSauce || card.querySelector("[data-sauce-select]")?.value || getSauceOptions()[0] || "";
   const salt = card.querySelector("[data-salt-option]:checked")?.value || SALT_OPTIONS[0];
 
   return { presentation, sauce, salt };
@@ -275,7 +590,7 @@ function renderOrderCard(item, index, extraClass = "") {
   const presentationOptions = getPresentationOptions(item);
   const defaultPresentation = presentationOptions[0] || "";
   const hasFixedSauce = hasConfigurableSauce(item) && item.fixedSauce;
-  const defaultSauce = hasFixedSauce ? item.fixedSauce : SAUCE_OPTIONS[0];
+  const defaultSauce = hasFixedSauce ? item.fixedSauce : getSauceOptions()[0] || "";
   const defaultQty = getSelectionQty(item.id, defaultPresentation, defaultSauce, SALT_OPTIONS[0]);
   const saltName = `salt-${item.id}`;
   const presentationSelect = presentationOptions.length
@@ -290,9 +605,7 @@ function renderOrderCard(item, index, extraClass = "") {
       </label>
     `
     : "";
-  const sauceOptions = SAUCE_OPTIONS.map(
-    (sauce) => `<option value="${escapeHTML(sauce)}">${escapeHTML(sauce)}</option>`
-  ).join("");
+  const sauceOptions = renderSauceOptions();
   const sauceControl = hasFixedSauce
     ? `
       <div class="fixed-sauce" data-fixed-sauce="${escapeHTML(item.fixedSauce)}">
@@ -371,6 +684,8 @@ function renderCatalog() {
     ? activeOffers.map((item, index) => renderOrderCard(item, index + 1, "offer-card")).join("")
     : '<p class="empty-panel">No hay ofertas activas en este momento.</p>';
 
+  renderSaucesList();
+  refreshAdminSauceSelects();
   renderSummary();
 
   observeRevealElements(productGrid);
@@ -454,6 +769,20 @@ function clearQuantities() {
 
 function readAdminItem(form, type) {
   const data = new FormData(form);
+
+  if (type === "sauce") {
+    const name = data.get("name")?.trim();
+
+    return {
+      id: createId(type),
+      type,
+      name,
+      tag: data.get("tag")?.trim() || "Salsa",
+      detail: name,
+      description: data.get("description")?.trim(),
+    };
+  }
+
   const fixedSauce = data.get("fixedSauce") || "";
   const supportsSauceConfig = ["combo", "offer"].includes(type);
 
@@ -492,7 +821,7 @@ function fillAdminForm(collection, item) {
   form.dataset.editingId = item.id;
   form.elements.name.value = item.name || "";
   form.elements.tag.value = item.tag || "";
-  form.elements.detail.value = item.detail || "";
+  if (form.elements.detail) form.elements.detail.value = item.detail || "";
   form.elements.description.value = item.description || "";
 
   if (form.elements.start) form.elements.start.value = item.start || "";
@@ -501,6 +830,7 @@ function fillAdminForm(collection, item) {
 
   const labels = {
     products: "Actualizar producto",
+    sauces: "Actualizar salsa",
     combos: "Actualizar combo",
     offers: "Actualizar oferta",
   };
@@ -509,17 +839,24 @@ function fillAdminForm(collection, item) {
   if (button) button.textContent = labels[collection];
 
   editingAdminItem = { collection, id: item.id };
-  activateAdminTab(collection === "products" ? "products" : collection === "combos" ? "combos" : "offers");
+  activateAdminTab(collection);
   form.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function saveAdminItem(form, collection, type, successLabel, updateLabel, defaultButtonLabel) {
+async function saveAdminItem(form, collection, type, successLabel, updateLabel, defaultButtonLabel) {
   const item = readAdminItem(form, type);
   const editingId = form.dataset.editingId;
+  let savedItem = item;
 
   if (editingId) {
     const index = catalog[collection].findIndex((current) => current.id === editingId);
+    const previousItem = index >= 0 ? catalog[collection][index] : null;
     const updated = { ...item, id: editingId };
+    savedItem = updated;
+
+    if (collection === "sauces" && previousItem?.name && previousItem.name !== updated.name) {
+      renameSauceReferences(previousItem.name, updated.name);
+    }
 
     if (index >= 0) {
       catalog[collection][index] = updated;
@@ -534,10 +871,43 @@ function saveAdminItem(form, collection, type, successLabel, updateLabel, defaul
     showToast(successLabel);
   }
 
-  saveCatalog();
+  if (collection === "sauces") {
+    refreshCatalogSauceReferences();
+  }
+
+  await persistAdminItem(collection, savedItem);
   resetAdminForm(form, defaultButtonLabel);
   renderCatalog();
   renderAdminList();
+}
+
+function renameSauceReferences(previousName, nextName) {
+  [...catalog.combos, ...catalog.offers].forEach((item) => {
+    if (item.fixedSauce === previousName) item.fixedSauce = nextName;
+  });
+
+  [...quantities.entries()].forEach(([key, item]) => {
+    if (item.sauce !== previousName) return;
+
+    const nextKey = createSelectionKey(item.id, item.presentation, nextName, item.salt);
+    quantities.delete(key);
+    quantities.set(nextKey, { ...item, key: nextKey, sauce: nextName });
+  });
+}
+
+function refreshCatalogSauceReferences() {
+  const sauceNames = new Set(getSauceOptions());
+
+  [...catalog.combos, ...catalog.offers].forEach((item) => {
+    if (item.fixedSauce && !sauceNames.has(item.fixedSauce)) {
+      item.fixedSauce = "";
+      item.sauceMode = "free";
+    }
+  });
+
+  [...quantities.entries()].forEach(([key, item]) => {
+    if (item.sauce && !sauceNames.has(item.sauce)) quantities.delete(key);
+  });
 }
 
 function renderAdminList() {
@@ -551,12 +921,16 @@ function renderAdminList() {
             .map((item) => {
               const range = item.type === "offer" ? ` · ${formatDate(item.start)} al ${formatDate(item.end)}` : "";
               const sauce = hasConfigurableSauce(item) && item.fixedSauce ? ` · Salsa fija: ${item.fixedSauce}` : "";
+              const detail =
+                item.type === "sauce"
+                  ? `${item.tag || "Salsa"}${item.description ? ` · ${item.description}` : ""}`
+                  : `${item.detail || ""}${range}${sauce}`;
 
               return `
                 <div class="admin-item">
                   <div>
                     <strong>${escapeHTML(item.name)}</strong>
-                    <small>${escapeHTML(item.detail)}${range}${escapeHTML(sauce)}</small>
+                    <small>${escapeHTML(detail)}</small>
                   </div>
 
                   <div class="admin-actions">
@@ -577,6 +951,7 @@ function renderAdminList() {
 
   adminList.innerHTML = [
     section("Productos", "products", catalog.products),
+    section("Salsas", "sauces", catalog.sauces),
     section("Combos", "combos", catalog.combos),
     section("Ofertas", "offers", catalog.offers),
   ].join("");
@@ -585,6 +960,7 @@ function renderAdminList() {
 function showAdminWorkspace() {
   adminLogin.hidden = true;
   adminWorkspace.hidden = false;
+  refreshAdminSauceSelects();
   renderAdminList();
 }
 
@@ -664,7 +1040,7 @@ if (canObserveReveals) {
 
 /* Eventos */
 
-document.addEventListener("click", (event) => {
+document.addEventListener("click", async (event) => {
   const quantityButton = event.target.closest("[data-action]");
 
   if (quantityButton) {
@@ -724,10 +1100,18 @@ document.addEventListener("click", (event) => {
     const type = deleteButton.dataset.adminType;
     const id = deleteButton.dataset.adminDelete;
 
+    const removedItem = catalog[type].find((item) => item.id === id);
+
     catalog[type] = catalog[type].filter((item) => item.id !== id);
     clearSelectionsForItem(id);
 
+    if (type === "sauces" && removedItem?.name) {
+      clearSelectionsUsingSauce(removedItem.name);
+      refreshCatalogSauceReferences();
+    }
+
     saveCatalog();
+    await deleteAdminItemFromSupabase(type, id);
     renderCatalog();
     renderAdminList();
     showToast("Elemento eliminado");
@@ -745,6 +1129,7 @@ clearButton.addEventListener("click", clearQuantities);
 copyButton.addEventListener("click", async () => {
   try {
     await copyToClipboard(buildMessage());
+    await saveOrderToSupabase("copy");
     showToast("Mensaje copiado");
   } catch {
     showToast("No se pudo copiar");
@@ -752,6 +1137,7 @@ copyButton.addEventListener("click", async () => {
 });
 
 orderLink.addEventListener("click", () => {
+  saveOrderToSupabase(WHATSAPP_NUMBER ? "whatsapp" : "instagram");
   copyToClipboard(buildMessage())
     .then(() => showToast("Mensaje copiado"))
     .catch(() => {});
@@ -785,19 +1171,25 @@ adminLogin.addEventListener("submit", (event) => {
   showAdminWorkspace();
 });
 
-document.querySelector("[data-product-form]").addEventListener("submit", (event) => {
+document.querySelector("[data-product-form]").addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  saveAdminItem(event.currentTarget, "products", "product", "Producto guardado", "Producto actualizado", "Guardar producto");
+  await saveAdminItem(event.currentTarget, "products", "product", "Producto guardado", "Producto actualizado", "Guardar producto");
 });
 
-document.querySelector("[data-combo-form]").addEventListener("submit", (event) => {
+document.querySelector("[data-sauce-form]").addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  saveAdminItem(event.currentTarget, "combos", "combo", "Combo guardado", "Combo actualizado", "Guardar combo");
+  await saveAdminItem(event.currentTarget, "sauces", "sauce", "Salsa guardada", "Salsa actualizada", "Guardar salsa");
 });
 
-document.querySelector("[data-offer-form]").addEventListener("submit", (event) => {
+document.querySelector("[data-combo-form]").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  await saveAdminItem(event.currentTarget, "combos", "combo", "Combo guardado", "Combo actualizado", "Guardar combo");
+});
+
+document.querySelector("[data-offer-form]").addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const item = readAdminItem(event.currentTarget, "offer");
@@ -807,7 +1199,7 @@ document.querySelector("[data-offer-form]").addEventListener("submit", (event) =
     return;
   }
 
-  saveAdminItem(event.currentTarget, "offers", "offer", "Oferta guardada", "Oferta actualizada", "Guardar oferta");
+  await saveAdminItem(event.currentTarget, "offers", "offer", "Oferta guardada", "Oferta actualizada", "Guardar oferta");
 });
 
 document.addEventListener("keydown", (event) => {
@@ -819,8 +1211,13 @@ document.addEventListener("keydown", (event) => {
 
 /* Inicio */
 
+async function startApp() {
+  setHeaderState();
+  await loadCatalogFromSupabase();
+  renderCatalog();
+  observeRevealElements();
+}
+
 window.addEventListener("scroll", setHeaderState, { passive: true });
 
-setHeaderState();
-renderCatalog();
-observeRevealElements();
+startApp();
