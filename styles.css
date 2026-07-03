@@ -149,33 +149,38 @@ button {
 
 .nav-toggle {
   display: none;
+  position: relative;
   width: 44px;
   height: 44px;
   border: 1px solid currentColor;
   border-radius: 50%;
   background: transparent;
   color: inherit;
-  place-items: center;
 }
 
 .nav-toggle span {
   display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: 18px;
   height: 2px;
+  margin: 0;
   background: currentColor;
+  transform: translate(-50%, -5px);
   transition: transform 220ms ease;
 }
 
-.nav-toggle span + span {
-  margin-top: -10px;
+.nav-toggle span:last-child {
+  transform: translate(-50%, 5px);
 }
 
 .site-header.is-open .nav-toggle span:first-child {
-  transform: rotate(45deg) translate(3px, 4px);
+  transform: translate(-50%, 0) rotate(45deg);
 }
 
 .site-header.is-open .nav-toggle span:last-child {
-  transform: rotate(-45deg) translate(4px, -4px);
+  transform: translate(-50%, 0) rotate(-45deg);
 }
 
 .hero {
