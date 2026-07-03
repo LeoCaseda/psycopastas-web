@@ -1609,7 +1609,7 @@ blockquote {
 
 @media (max-width: 720px) {
   .site-header {
-    inset: 10px;
+    inset: 10px 10px auto;
     min-height: 58px;
   }
 
@@ -2286,15 +2286,17 @@ blockquote {
   }
 
   .site-header {
-    inset: 8px;
+    inset: 8px 8px auto;
     min-height: 56px;
     padding: 8px;
     gap: 8px;
+    max-height: 58px;
+    overflow: visible;
   }
 
   .site-header.is-scrolled,
   .site-header.is-open {
-    inset: 8px;
+    inset: 8px 8px auto;
   }
 
   .brand {
@@ -2321,6 +2323,7 @@ blockquote {
   .site-nav {
     max-height: calc(100svh - 88px);
     overflow-y: auto;
+    top: calc(100% + 8px);
   }
 
   .site-nav a,
