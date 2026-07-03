@@ -2742,3 +2742,585 @@ blockquote {
     transform: none;
   }
 }
+
+/* ============================= */
+/* EXPERIENCIA FIRMA PSYCOPASTAS */
+/* ============================= */
+
+:root {
+  --gold-soft: #e9c89e;
+  --paper: #fff7ee;
+  --paper-deep: #f3dfcd;
+  --ink-soft: rgba(67, 0, 16, 0.72);
+  --signature-shadow: 0 34px 90px rgba(37, 0, 8, 0.22);
+  --signature-border: rgba(216, 174, 135, 0.38);
+}
+
+html {
+  scroll-padding-top: 98px;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 6%, rgba(216, 174, 135, 0.18), transparent 34%),
+    linear-gradient(180deg, var(--cream-50), #fff5ea 42%, var(--cream-50));
+}
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 90;
+  width: 100%;
+  height: 3px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--gold-soft), var(--cream-50), var(--gold-soft));
+  box-shadow: 0 0 18px rgba(216, 174, 135, 0.5);
+  pointer-events: none;
+}
+
+.site-header {
+  border-radius: 999px;
+}
+
+.site-header.is-scrolled,
+.site-header.is-open {
+  background: rgba(255, 247, 238, 0.88);
+  border-color: rgba(216, 174, 135, 0.3);
+}
+
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), transparent 34%, rgba(216, 174, 135, 0.18)),
+    rgba(67, 0, 16, 0.04);
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.site-header.is-scrolled::before,
+.site-header.is-open::before {
+  opacity: 1;
+}
+
+.brand {
+  letter-spacing: 0.01em;
+}
+
+.brand img {
+  box-shadow:
+    0 0 0 2px rgba(255, 250, 245, 0.34),
+    0 0 0 7px rgba(216, 174, 135, 0.08),
+    0 18px 38px rgba(37, 0, 8, 0.2);
+}
+
+.hero {
+  background:
+    linear-gradient(120deg, rgba(37, 0, 8, 0.98), rgba(91, 6, 25, 0.96) 48%, rgba(37, 0, 8, 0.94)),
+    url("img/Slogan.jpeg") center / cover;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 24%, rgba(233, 200, 158, 0.18), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(255, 250, 245, 0.1), transparent 24%),
+    linear-gradient(90deg, rgba(255, 250, 245, 0.08), transparent 20%, transparent 78%, rgba(0, 0, 0, 0.22));
+}
+
+.hero::after {
+  height: 42%;
+  background:
+    linear-gradient(to top, rgba(37, 0, 8, 0.74), transparent),
+    repeating-linear-gradient(90deg, rgba(248, 234, 220, 0.03) 0 1px, transparent 1px 14px);
+}
+
+.hero h1 {
+  position: relative;
+  width: fit-content;
+  text-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 0 38px rgba(216, 174, 135, 0.1);
+}
+
+.hero h1::before {
+  content: "";
+  position: absolute;
+  left: -0.04em;
+  right: -0.04em;
+  bottom: 0.04em;
+  z-index: -1;
+  height: 0.14em;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(216, 174, 135, 0.34), transparent);
+  transform: rotate(-1.3deg);
+}
+
+.hero-copy {
+  text-wrap: pretty;
+}
+
+.pasta-line {
+  position: absolute;
+  width: min(42vw, 620px);
+  height: 210px;
+  border: 1px solid rgba(233, 200, 158, 0.16);
+  border-color: rgba(233, 200, 158, 0.16) transparent transparent;
+  border-radius: 50%;
+  filter: blur(0.1px);
+  animation: signatureLineDrift 12s ease-in-out infinite alternate;
+}
+
+.pasta-line-one {
+  right: -9vw;
+  top: 24%;
+  rotate: -16deg;
+}
+
+.pasta-line-two {
+  left: -12vw;
+  bottom: 12%;
+  rotate: 13deg;
+  animation-delay: -5s;
+}
+
+.flour-grain {
+  position: absolute;
+  width: 7px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 250, 245, 0.62);
+  box-shadow: 0 0 22px rgba(248, 234, 220, 0.52);
+  animation: flourFloat 7s ease-in-out infinite;
+}
+
+.flour-grain-one {
+  left: 14%;
+  top: 28%;
+}
+
+.flour-grain-two {
+  left: 48%;
+  top: 18%;
+  animation-delay: -2s;
+}
+
+.flour-grain-three {
+  right: 18%;
+  top: 42%;
+  animation-delay: -4s;
+}
+
+.flour-grain-four {
+  right: 34%;
+  bottom: 18%;
+  animation-delay: -1s;
+}
+
+.image-orbit {
+  border-color: rgba(233, 200, 158, 0.36);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 250, 245, 0.08),
+    0 0 70px rgba(216, 174, 135, 0.14);
+}
+
+.logo-medallion {
+  border: 1px solid rgba(248, 234, 220, 0.26);
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.3),
+    0 0 0 12px rgba(248, 234, 220, 0.04);
+}
+
+.product-medallion {
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(216, 174, 135, 0.38);
+}
+
+.section-heading h2,
+.sauces-copy h2,
+.quality-content h2 {
+  text-wrap: balance;
+}
+
+.section-heading::before,
+.sauces-copy::before {
+  content: "";
+  display: block;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(216, 174, 135, 0.58);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(216, 174, 135, 0.22) 0 28%, transparent 30%),
+    conic-gradient(from 80deg, transparent 0 22%, rgba(216, 174, 135, 0.45) 22% 30%, transparent 30% 100%);
+  opacity: 0.9;
+}
+
+.offers-section .section-heading::before,
+.sauces-section .sauces-copy::before,
+.quote-section .quote-inner::before {
+  border-color: rgba(248, 234, 220, 0.42);
+}
+
+.menu-grid,
+.offer-grid {
+  perspective: 1200px;
+}
+
+.product-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-color: rgba(67, 0, 16, 0.12);
+  background:
+    radial-gradient(circle at var(--spotlight-x, 50%) var(--spotlight-y, 0%), rgba(216, 174, 135, 0.2), transparent 34%),
+    linear-gradient(145deg, rgba(255, 250, 245, 0.98), rgba(247, 229, 211, 0.88));
+  box-shadow:
+    0 22px 58px rgba(67, 0, 16, 0.08),
+    inset 0 1px rgba(255, 255, 255, 0.72);
+  transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition:
+    transform 320ms var(--ease),
+    box-shadow 320ms ease,
+    border-color 320ms ease,
+    background 320ms ease;
+}
+
+.product-card:hover,
+.product-card:focus-within {
+  transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-10px);
+  border-color: rgba(216, 174, 135, 0.52);
+  box-shadow:
+    0 36px 96px rgba(67, 0, 16, 0.2),
+    inset 0 1px rgba(255, 255, 255, 0.9);
+}
+
+.product-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7px;
+  z-index: 0;
+  background: linear-gradient(90deg, var(--wine-900), var(--gold-soft), transparent);
+  opacity: 0.88;
+}
+
+.product-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, transparent 0 38%, rgba(255, 255, 255, 0.36) 46%, transparent 56%),
+    repeating-linear-gradient(135deg, rgba(67, 0, 16, 0.024) 0 1px, transparent 1px 13px);
+  opacity: 0;
+  translate: -28% 0;
+  transition: opacity 320ms ease, translate 760ms var(--ease);
+}
+
+.product-card:hover::after,
+.product-card:focus-within::after {
+  opacity: 1;
+  translate: 18% 0;
+}
+
+.card-ornament {
+  position: absolute;
+  top: 15px;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
+  opacity: 0.38;
+}
+
+.card-ornament::before,
+.card-ornament::after {
+  content: "";
+  position: absolute;
+  border-color: rgba(91, 6, 25, 0.42);
+}
+
+.card-ornament::before {
+  inset: 0;
+  border-top: 1px solid;
+}
+
+.card-ornament::after {
+  inset: 0;
+  border-left: 1px solid;
+}
+
+.card-ornament-left {
+  left: 15px;
+}
+
+.card-ornament-right {
+  right: 15px;
+  rotate: 90deg;
+}
+
+.product-top,
+.product-card h3,
+.product-card p,
+.order-options,
+.product-controls,
+.combo-includes {
+  position: relative;
+  z-index: 1;
+}
+
+.product-number {
+  color: var(--wine-900);
+  text-shadow: 0 10px 28px rgba(67, 0, 16, 0.12);
+}
+
+.product-tag {
+  background: rgba(255, 250, 245, 0.64);
+  border-color: rgba(216, 174, 135, 0.44);
+  color: var(--wine-900);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.offer-card {
+  background:
+    radial-gradient(circle at var(--spotlight-x, 22%) var(--spotlight-y, 0%), rgba(233, 200, 158, 0.28), transparent 34%),
+    linear-gradient(145deg, #fff9f1, #f3ddc8) !important;
+  color: var(--wine-900);
+  border-color: rgba(216, 174, 135, 0.6);
+}
+
+.offer-card::before {
+  background: linear-gradient(90deg, var(--wine-900), var(--gold-soft), var(--wine-900)) !important;
+}
+
+.offer-card .product-tag {
+  background: var(--wine-900);
+  color: var(--cream-50) !important;
+  border-color: transparent;
+}
+
+.order-options select,
+.presentation-stepper,
+.salt-option span,
+.fixed-sauce,
+.product-controls output,
+.order-form input,
+.order-form textarea {
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.78),
+    0 10px 24px rgba(67, 0, 16, 0.04);
+}
+
+.presentation-step-btn,
+.qty-btn {
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.55),
+    0 10px 20px rgba(67, 0, 16, 0.06);
+}
+
+.presentation-step-btn:active,
+.qty-btn:active {
+  transform: scale(0.92);
+}
+
+.sauces-section {
+  box-shadow:
+    inset 0 60px 120px rgba(0, 0, 0, 0.12),
+    inset 0 -60px 120px rgba(0, 0, 0, 0.08);
+}
+
+.sauce-board {
+  border-radius: 18px;
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.24),
+    inset 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.sauce-row {
+  position: relative;
+}
+
+.sauce-row::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 34px;
+  bottom: -14px;
+  width: 1px;
+  background: linear-gradient(var(--almond), transparent);
+  opacity: 0.52;
+}
+
+.sauce-row:last-child::after {
+  display: none;
+}
+
+.sauce-row-marker {
+  animation: saucePulse 3.6s ease-in-out infinite;
+}
+
+.quality-media {
+  position: relative;
+}
+
+.quality-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(125deg, transparent 34%, rgba(255, 250, 245, 0.24), transparent 58%),
+    linear-gradient(to top, rgba(37, 0, 8, 0.22), transparent 38%);
+  opacity: 0.72;
+}
+
+.quote-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.quote-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(216, 174, 135, 0.18), transparent 32%),
+    repeating-linear-gradient(90deg, rgba(255, 250, 245, 0.026) 0 1px, transparent 1px 18px);
+}
+
+.quote-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.quote-inner::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: -22px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(248, 234, 220, 0.42);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(216, 174, 135, 0.18) 0 28%, transparent 30%),
+    conic-gradient(from 80deg, transparent 0 22%, rgba(216, 174, 135, 0.45) 22% 30%, transparent 30% 100%);
+}
+
+blockquote {
+  text-wrap: balance;
+}
+
+@keyframes signatureLineDrift {
+  from {
+    transform: translate3d(0, 0, 0) scaleX(1);
+    opacity: 0.62;
+  }
+
+  to {
+    transform: translate3d(28px, -18px, 0) scaleX(1.08);
+    opacity: 0.26;
+  }
+}
+
+@keyframes flourFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.16;
+  }
+
+  45% {
+    transform: translate3d(14px, -20px, 0) scale(1.35);
+    opacity: 0.72;
+  }
+}
+
+@keyframes saucePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 5px rgba(216, 174, 135, 0.16);
+  }
+
+  50% {
+    box-shadow: 0 0 0 9px rgba(216, 174, 135, 0.08);
+  }
+}
+
+@media (max-width: 720px) {
+  html {
+    scroll-padding-top: 78px;
+  }
+
+  .scroll-progress {
+    height: 2px;
+  }
+
+  .site-header:not(.is-scrolled):not(.is-open) {
+    background: rgba(67, 0, 16, 0.78);
+    backdrop-filter: blur(14px);
+  }
+
+  .hero::before {
+    background:
+      radial-gradient(circle at 18% 16%, rgba(233, 200, 158, 0.18), transparent 38%),
+      linear-gradient(180deg, rgba(255, 250, 245, 0.05), transparent 34%);
+  }
+
+  .section-heading::before,
+  .sauces-copy::before,
+  .quote-inner::before {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 14px;
+  }
+
+  .product-card,
+  .product-card:hover,
+  .product-card:focus-within,
+  .offer-card,
+  .offer-card:hover,
+  .offer-card:focus-within {
+    transform: none !important;
+  }
+
+  .card-ornament {
+    opacity: 0.22;
+  }
+
+  .sauce-row::after {
+    left: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strip-track,
+  .image-orbit,
+  .strand,
+  .pasta-line,
+  .flour-grain,
+  .sauce-row-marker {
+    animation: none !important;
+  }
+
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

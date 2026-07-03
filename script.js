@@ -143,6 +143,7 @@ const adminLogin = document.querySelector("[data-admin-login]");
 const adminLogout = document.querySelector("[data-admin-logout]");
 const adminWorkspace = document.querySelector("[data-admin-workspace]");
 const adminList = document.querySelector("[data-admin-list]");
+const scrollProgress = document.querySelector("[data-scroll-progress]");
 
 function escapeHTML(value = "") {
   return String(value).replace(/[&<>"']/g, (char) => {
@@ -679,6 +680,15 @@ function setHeaderState() {
   header.classList.toggle("is-scrolled", window.scrollY > 24);
 }
 
+function updateScrollProgress() {
+  if (!scrollProgress) return;
+
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+
+  scrollProgress.style.transform = `scaleX(${Math.max(0, Math.min(1, progress))})`;
+}
+
 function closeNav() {
   header.classList.remove("is-open");
   navToggle.setAttribute("aria-label", "Abrir menú");
@@ -798,7 +808,9 @@ function renderOrderCard(item, index, extraClass = "") {
       : "";
 
   return `
-    <article class="product-card reveal ${extraClass}" data-order-item="${escapeHTML(item.id)}">
+    <article class="product-card reveal ${extraClass}" data-order-item="${escapeHTML(item.id)}" style="--card-index: ${index};">
+      <span class="card-ornament card-ornament-left" aria-hidden="true"></span>
+      <span class="card-ornament card-ornament-right" aria-hidden="true"></span>
       <div class="product-top">
         <span class="product-number">${String(index).padStart(2, "0")}</span>
         <span class="product-tag">${escapeHTML(item.tag || item.type)}</span>
@@ -847,6 +859,8 @@ function renderCatalog() {
 
   observeRevealElements(productGrid);
   observeRevealElements(offersGrid);
+  initSignatureInteractions(productGrid);
+  initSignatureInteractions(offersGrid);
 }
 
 function renderSummary() {
@@ -1203,6 +1217,35 @@ if (canObserveReveals) {
   );
 }
 
+function initSignatureInteractions(root = document) {
+  const shouldSkip = window.matchMedia("(hover: none), (pointer: coarse), (prefers-reduced-motion: reduce)").matches;
+  if (shouldSkip) return;
+
+  root.querySelectorAll(".product-card:not([data-signature-ready])").forEach((card) => {
+    card.dataset.signatureReady = "true";
+
+    card.addEventListener("pointermove", (event) => {
+      const rect = card.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      const tiltX = ((y - 50) / 50) * -3;
+      const tiltY = ((x - 50) / 50) * 3;
+
+      card.style.setProperty("--spotlight-x", `${x}%`);
+      card.style.setProperty("--spotlight-y", `${y}%`);
+      card.style.setProperty("--tilt-x", `${tiltX}deg`);
+      card.style.setProperty("--tilt-y", `${tiltY}deg`);
+    });
+
+    card.addEventListener("pointerleave", () => {
+      card.style.removeProperty("--spotlight-x");
+      card.style.removeProperty("--spotlight-y");
+      card.style.removeProperty("--tilt-x");
+      card.style.removeProperty("--tilt-y");
+    });
+  });
+}
+
 /* Eventos */
 
 document.addEventListener("click", async (event) => {
@@ -1420,11 +1463,19 @@ document.addEventListener("keydown", (event) => {
 
 async function startApp() {
   setHeaderState();
+  updateScrollProgress();
   await loadCatalogFromSupabase();
   renderCatalog();
   observeRevealElements();
 }
 
-window.addEventListener("scroll", setHeaderState, { passive: true });
+window.addEventListener(
+  "scroll",
+  () => {
+    setHeaderState();
+    updateScrollProgress();
+  },
+  { passive: true }
+);
 
 startApp();
