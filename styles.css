@@ -663,17 +663,34 @@ button {
 }
 
 .offer-card .order-options label,
+.offer-card .presentation-field,
 .offer-card .salt-field,
 .offer-card .fixed-sauce {
   color: var(--cream-50);
 }
 
 .offer-card .order-options select,
+.offer-card .presentation-stepper,
 .offer-card .salt-option span,
 .offer-card .fixed-sauce {
   border-color: rgba(248, 234, 220, 0.22);
   background: rgba(255, 250, 245, 0.1);
   color: var(--cream-50);
+}
+
+.offer-card .presentation-stepper output,
+.offer-card .presentation-step-btn {
+  color: var(--cream-50);
+}
+
+.offer-card .presentation-step-btn {
+  background: rgba(255, 250, 245, 0.14);
+}
+
+.offer-card .presentation-step-btn:hover,
+.offer-card .presentation-step-btn:focus-visible {
+  background: var(--cream-100);
+  color: var(--wine-900);
 }
 
 .offer-card .order-options select option {
@@ -779,6 +796,7 @@ button {
 }
 
 .order-options label,
+.presentation-field,
 .salt-field,
 .fixed-sauce {
   display: grid;
@@ -789,6 +807,10 @@ button {
   color: var(--wine-900);
   font-size: 0.84rem;
   font-weight: 900;
+}
+
+.presentation-field > span {
+  color: inherit;
 }
 
 .salt-field legend {
@@ -805,6 +827,51 @@ button {
   padding: 0 13px;
   outline: none;
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.presentation-stepper {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(67, 0, 16, 0.16);
+  border-radius: 999px;
+  background: var(--cream-50);
+  padding: 4px;
+}
+
+.presentation-stepper output {
+  min-width: 0;
+  color: var(--wine-900);
+  font-size: 1rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.presentation-step-btn {
+  width: 40px;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(91, 6, 25, 0.1);
+  color: var(--wine-900);
+  font-size: 1.2rem;
+  font-weight: 900;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, opacity 180ms ease;
+}
+
+.presentation-step-btn:hover,
+.presentation-step-btn:focus-visible {
+  background: var(--wine-900);
+  color: var(--cream-50);
+  transform: scale(1.04);
+}
+
+.presentation-step-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.34;
+  transform: none;
 }
 
 .fixed-sauce {
@@ -1296,6 +1363,22 @@ blockquote {
   line-height: 0.95;
 }
 
+.admin-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-logout {
+  min-height: 40px;
+  border: 1px solid rgba(67, 0, 16, 0.16);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--wine-900);
+  padding: 0 14px;
+  font-weight: 900;
+}
+
 .admin-close {
   width: 44px;
   aspect-ratio: 1;
@@ -1314,7 +1397,7 @@ blockquote {
 
 .admin-login {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
   gap: 14px;
   align-items: end;
 }
@@ -1806,6 +1889,8 @@ blockquote {
 .offer-card .product-number,
 .offer-card .offer-date,
 .offer-card .order-options label,
+.offer-card .presentation-field,
+.offer-card .presentation-stepper output,
 .offer-card .salt-field,
 .offer-card .fixed-sauce span,
 .offer-card .fixed-sauce strong,
@@ -1820,12 +1905,24 @@ blockquote {
 }
 
 .offer-card .order-options select,
+.offer-card .presentation-stepper,
 .offer-card .salt-option span,
 .offer-card .fixed-sauce,
 .offer-card .product-controls output {
   border-color: rgba(67, 0, 16, 0.16) !important;
   background: #ffffff !important;
   color: var(--wine-900) !important;
+}
+
+.offer-card .presentation-step-btn {
+  background: rgba(91, 6, 25, 0.1) !important;
+  color: var(--wine-900) !important;
+}
+
+.offer-card .presentation-step-btn:hover,
+.offer-card .presentation-step-btn:focus-visible {
+  background: var(--wine-900) !important;
+  color: var(--cream-50) !important;
 }
 
 .offer-card .order-options select option {

@@ -1,8 +1,6 @@
 const WHATSAPP_NUMBER = "";
 const INSTAGRAM_LINK = "https://www.instagram.com/psycopastas/";
-const ADMIN_KEY = "psyco2026";
 const CATALOG_STORAGE_KEY = "psycopastas.catalog.v4";
-const ADMIN_SESSION_KEY = "psycopastas.admin.unlocked";
 const OPTION_SEPARATOR = "|||";
 const SUPABASE_URL = "https://qsvigjpadxmotfzhnlue.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_wL59UbFVdWW0vm0gVw4thQ_i-go_WIU";
@@ -11,6 +9,7 @@ const DB_TABLES = {
   catalog: "catalog_items",
   sauces: "sauces",
   orders: "orders",
+  admins: "admin_users",
 };
 
 const DEFAULT_SAUCES = [
@@ -65,8 +64,13 @@ const DEFAULT_SAUCES = [
 ];
 
 const SALT_OPTIONS = ["Con sal", "Sin sal"];
-const GRAM_PRESENTATIONS = ["500 g", "1000 g", "Más de 1 kg"];
-const DOZEN_PRESENTATIONS = ["1/2 docena", "1 docena", "Más de 1 docena"];
+const GRAM_PRESENTATION_MIN = 500;
+const GRAM_PRESENTATION_MAX = 10000;
+const GRAM_PRESENTATION_STEP = 250;
+const HALF_DOZEN_PRESENTATION_MIN = 1;
+const HALF_DOZEN_PRESENTATION_MAX = 40;
+const GRAM_PRESENTATIONS = createGramPresentations();
+const DOZEN_PRESENTATIONS = createDozenPresentations();
 
 const DEFAULT_CATALOG = {
   products: [
@@ -136,6 +140,7 @@ const orderForm = document.querySelector("[data-order-form]");
 const toast = document.querySelector("[data-toast]");
 const adminPanel = document.querySelector("[data-admin-panel]");
 const adminLogin = document.querySelector("[data-admin-login]");
+const adminLogout = document.querySelector("[data-admin-logout]");
 const adminWorkspace = document.querySelector("[data-admin-workspace]");
 const adminList = document.querySelector("[data-admin-list]");
 
@@ -184,6 +189,52 @@ function getSupabaseClient() {
 
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   return supabaseClient;
+}
+
+async function getCurrentSession() {
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  const { data, error } = await client.auth.getSession();
+
+  if (error) {
+    console.warn("Supabase no pudo leer la sesión:", error);
+    return null;
+  }
+
+  return data.session;
+}
+
+async function userHasAdminAccess() {
+  const client = getSupabaseClient();
+  if (!client) return false;
+
+  const session = await getCurrentSession();
+  if (!session?.user?.id) return false;
+
+  const { data, error } = await client
+    .from(DB_TABLES.admins)
+    .select("user_id")
+    .eq("user_id", session.user.id)
+    .limit(1);
+
+  if (error) {
+    console.warn("Supabase no pudo verificar el administrador:", error);
+    return false;
+  }
+
+  return Boolean(data?.length);
+}
+
+async function requireAdminAccess() {
+  const hasAccess = await userHasAdminAccess();
+
+  if (!hasAccess) {
+    showToast("Iniciá sesión como administrador");
+    showAdminLogin();
+  }
+
+  return hasAccess;
 }
 
 function toDbItem(item, sortOrder = 0) {
@@ -259,7 +310,9 @@ async function loadCatalogFromSupabase() {
 
   if (!items?.length && !sauces?.length) {
     supabaseReady = true;
-    await persistCatalogSnapshotToSupabase();
+    if (await userHasAdminAccess()) {
+      await persistCatalogSnapshotToSupabase();
+    }
     return true;
   }
 
@@ -480,10 +533,112 @@ function hasConfigurableSauce(item) {
   return ["combo", "offer"].includes(item.type);
 }
 
+function formatGramPresentation(grams) {
+  if (grams < 1000) return `${grams} g`;
+
+  const kilos = grams / 1000;
+  const formatted = Number.isInteger(kilos)
+    ? kilos.toString()
+    : kilos.toLocaleString("es-AR", {
+        maximumFractionDigits: 2,
+      });
+
+  return `${formatted} kg`;
+}
+
+function createGramPresentations() {
+  const presentations = [];
+
+  for (let grams = GRAM_PRESENTATION_MIN; grams <= GRAM_PRESENTATION_MAX; grams += GRAM_PRESENTATION_STEP) {
+    presentations.push(formatGramPresentation(grams));
+  }
+
+  return presentations;
+}
+
+function formatDozenPresentation(halfDozens) {
+  if (halfDozens === 1) return "1/2 docena";
+  if (halfDozens === 2) return "1 docena";
+
+  const wholeDozens = Math.floor(halfDozens / 2);
+
+  if (halfDozens % 2 === 0) {
+    return `${wholeDozens} docenas`;
+  }
+
+  return `${wholeDozens} 1/2 docenas`;
+}
+
+function createDozenPresentations() {
+  const presentations = [];
+
+  for (let halfDozens = HALF_DOZEN_PRESENTATION_MIN; halfDozens <= HALF_DOZEN_PRESENTATION_MAX; halfDozens += 1) {
+    presentations.push(formatDozenPresentation(halfDozens));
+  }
+
+  return presentations;
+}
+
 function getPresentationOptions(item) {
   if (item.type !== "product") return [];
 
   return item.name.toLowerCase().includes("sorrentinos") ? DOZEN_PRESENTATIONS : GRAM_PRESENTATIONS;
+}
+
+function renderPresentationControl(item, presentationOptions) {
+  if (!presentationOptions.length) return "";
+
+  const defaultPresentation = presentationOptions[0];
+
+  return `
+    <div class="presentation-field">
+      <span>Presentación</span>
+      <div class="presentation-stepper" data-presentation-stepper data-presentation-index="0">
+        <button
+          class="presentation-step-btn"
+          type="button"
+          data-presentation-step="decrease"
+          aria-label="Disminuir presentación de ${escapeHTML(item.name)}"
+          disabled
+        >
+          -
+        </button>
+        <output data-presentation-value data-value="${escapeHTML(defaultPresentation)}">${escapeHTML(defaultPresentation)}</output>
+        <button
+          class="presentation-step-btn"
+          type="button"
+          data-presentation-step="increase"
+          aria-label="Aumentar presentación de ${escapeHTML(item.name)}"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function setPresentationIndex(card, nextIndex) {
+  const item = findOrderItem(card?.dataset.orderItem);
+  const stepper = card?.querySelector("[data-presentation-stepper]");
+  const output = card?.querySelector("[data-presentation-value]");
+
+  if (!item || !stepper || !output) return;
+
+  const presentationOptions = getPresentationOptions(item);
+  const safeIndex = Math.max(0, Math.min(nextIndex, presentationOptions.length - 1));
+  const selectedPresentation = presentationOptions[safeIndex] || "";
+
+  stepper.dataset.presentationIndex = String(safeIndex);
+  output.textContent = selectedPresentation;
+  output.dataset.value = selectedPresentation;
+
+  const decreaseButton = stepper.querySelector("[data-presentation-step='decrease']");
+  const increaseButton = stepper.querySelector("[data-presentation-step='increase']");
+
+  if (decreaseButton) decreaseButton.disabled = safeIndex === 0;
+  if (increaseButton) increaseButton.disabled = safeIndex === presentationOptions.length - 1;
+
+  syncCardQuantity(card);
 }
 
 function createSelectionKey(id, presentation, sauce, salt) {
@@ -491,7 +646,10 @@ function createSelectionKey(id, presentation, sauce, salt) {
 }
 
 function getCardOptions(card) {
-  const presentation = card.querySelector("[data-presentation-select]")?.value || "";
+  const presentation =
+    card.querySelector("[data-presentation-value]")?.dataset.value ||
+    card.querySelector("[data-presentation-select]")?.value ||
+    "";
   const fixedSauce = card.querySelector("[data-fixed-sauce]")?.dataset.fixedSauce;
   const sauce = fixedSauce || card.querySelector("[data-sauce-select]")?.value || getSauceOptions()[0] || "";
   const salt = card.querySelector("[data-salt-option]:checked")?.value || SALT_OPTIONS[0];
@@ -593,18 +751,7 @@ function renderOrderCard(item, index, extraClass = "") {
   const defaultSauce = hasFixedSauce ? item.fixedSauce : getSauceOptions()[0] || "";
   const defaultQty = getSelectionQty(item.id, defaultPresentation, defaultSauce, SALT_OPTIONS[0]);
   const saltName = `salt-${item.id}`;
-  const presentationSelect = presentationOptions.length
-    ? `
-      <label>
-        Presentación
-        <select data-presentation-select aria-label="Elegir presentación para ${escapeHTML(item.name)}">
-          ${presentationOptions
-            .map((presentation) => `<option value="${escapeHTML(presentation)}">${escapeHTML(presentation)}</option>`)
-            .join("")}
-        </select>
-      </label>
-    `
-    : "";
+  const presentationControl = renderPresentationControl(item, presentationOptions);
   const sauceOptions = renderSauceOptions();
   const sauceControl = hasFixedSauce
     ? `
@@ -654,7 +801,7 @@ function renderOrderCard(item, index, extraClass = "") {
       ${period}
 
       <div class="order-options">
-        ${presentationSelect}
+        ${presentationControl}
         ${sauceControl}
 
         <fieldset class="salt-field">
@@ -844,6 +991,8 @@ function fillAdminForm(collection, item) {
 }
 
 async function saveAdminItem(form, collection, type, successLabel, updateLabel, defaultButtonLabel) {
+  if (!(await requireAdminAccess())) return;
+
   const item = readAdminItem(form, type);
   const editingId = form.dataset.editingId;
   let savedItem = item;
@@ -960,21 +1109,27 @@ function renderAdminList() {
 function showAdminWorkspace() {
   adminLogin.hidden = true;
   adminWorkspace.hidden = false;
+  if (adminLogout) adminLogout.hidden = false;
   refreshAdminSauceSelects();
   renderAdminList();
 }
 
-function openAdminPanel() {
+function showAdminLogin() {
+  adminLogin.hidden = false;
+  adminWorkspace.hidden = true;
+  if (adminLogout) adminLogout.hidden = true;
+  adminLogin.querySelector("input[name='email']")?.focus();
+}
+
+async function openAdminPanel() {
   adminPanel.hidden = false;
   document.body.classList.add("no-scroll");
   closeNav();
 
-  if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+  if (await userHasAdminAccess()) {
     showAdminWorkspace();
   } else {
-    adminLogin.hidden = false;
-    adminWorkspace.hidden = true;
-    adminLogin.querySelector("input")?.focus();
+    showAdminLogin();
   }
 }
 
@@ -1041,6 +1196,18 @@ if (canObserveReveals) {
 /* Eventos */
 
 document.addEventListener("click", async (event) => {
+  const presentationButton = event.target.closest("[data-presentation-step]");
+
+  if (presentationButton) {
+    const card = presentationButton.closest("[data-order-item]");
+    const stepper = card?.querySelector("[data-presentation-stepper]");
+    const currentIndex = Number(stepper?.dataset.presentationIndex || 0);
+    const change = presentationButton.dataset.presentationStep === "increase" ? 1 : -1;
+
+    setPresentationIndex(card, currentIndex + change);
+    return;
+  }
+
   const quantityButton = event.target.closest("[data-action]");
 
   if (quantityButton) {
@@ -1067,7 +1234,19 @@ document.addEventListener("click", async (event) => {
   }
 
   if (event.target.closest("[data-admin-open]")) {
-    openAdminPanel();
+    await openAdminPanel();
+    return;
+  }
+
+  if (event.target.closest("[data-admin-logout]")) {
+    const client = getSupabaseClient();
+    await client?.auth.signOut();
+    resetAdminForm(document.querySelector("[data-product-form]"), "Guardar producto");
+    resetAdminForm(document.querySelector("[data-sauce-form]"), "Guardar salsa");
+    resetAdminForm(document.querySelector("[data-combo-form]"), "Guardar combo");
+    resetAdminForm(document.querySelector("[data-offer-form]"), "Guardar oferta");
+    showAdminLogin();
+    showToast("Sesión cerrada");
     return;
   }
 
@@ -1097,6 +1276,8 @@ document.addEventListener("click", async (event) => {
   const deleteButton = event.target.closest("[data-admin-delete]");
 
   if (deleteButton) {
+    if (!(await requireAdminAccess())) return;
+
     const type = deleteButton.dataset.adminType;
     const id = deleteButton.dataset.adminDelete;
 
@@ -1119,7 +1300,7 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("change", (event) => {
-  if (!event.target.closest("[data-presentation-select], [data-sauce-select], [data-salt-option]")) return;
+  if (!event.target.closest("[data-sauce-select], [data-salt-option]")) return;
 
   syncCardQuantity(event.target.closest("[data-order-item]"));
 });
@@ -1156,19 +1337,35 @@ nav.addEventListener("click", (event) => {
   }
 });
 
-adminLogin.addEventListener("submit", (event) => {
+adminLogin.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const key = new FormData(adminLogin).get("adminKey");
+  const client = getSupabaseClient();
+  const data = new FormData(adminLogin);
+  const email = data.get("email")?.trim();
+  const password = data.get("password");
 
-  if (key !== ADMIN_KEY) {
-    showToast("Clave incorrecta");
+  if (!client) {
+    showToast("Supabase no está disponible");
     return;
   }
 
-  sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+  const { error } = await client.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showToast("Datos de acceso incorrectos");
+    return;
+  }
+
+  if (!(await userHasAdminAccess())) {
+    await client.auth.signOut();
+    showToast("Usuario sin permiso de gestión");
+    return;
+  }
+
   adminLogin.reset();
   showAdminWorkspace();
+  showToast("Sesión iniciada");
 });
 
 document.querySelector("[data-product-form]").addEventListener("submit", async (event) => {

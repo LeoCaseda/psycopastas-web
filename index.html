@@ -283,13 +283,20 @@
             <p class="eyebrow">Acceso privado</p>
             <h2 id="admin-title">Gestión PsycoPastas</h2>
           </div>
-          <button class="admin-close" type="button" aria-label="Cerrar gestión" data-admin-close>×</button>
+          <div class="admin-head-actions">
+            <button class="admin-logout" type="button" data-admin-logout hidden>Cerrar sesión</button>
+            <button class="admin-close" type="button" aria-label="Cerrar gestión" data-admin-close>×</button>
+          </div>
         </div>
 
         <form class="admin-login" data-admin-login>
           <label>
-            Clave de acceso
-            <input type="password" name="adminKey" autocomplete="current-password" required />
+            Email administrador
+            <input type="email" name="email" autocomplete="email" placeholder="admin@psycopastas.com" required />
+          </label>
+          <label>
+            Contraseña
+            <input type="password" name="password" autocomplete="current-password" required />
           </label>
           <button class="btn btn-primary" type="submit">Ingresar</button>
         </form>
